@@ -24,7 +24,14 @@ const limiter = rateLimit({
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(limiter);
+
+// Serve static files BEFORE rate limiting
+app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
+app.use('/assest', express.static('assest'));
+
+// Apply rate limiting only to API routes
+app.use('/api/', limiter);
 
 // Session configuration
 app.use(session({
@@ -38,12 +45,7 @@ app.use(session({
   }
 }));
 
-// Serve static files
-app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
-app.use('/assest', express.static('assest'));
-
-// Favicon route using logo file if present
+// Favicon route using logo file if present (before static files to avoid duplication)
 app.get('/favicon.ico', (req, res) => {
   const logoPath = path.join(__dirname, 'assest', 'logo.png');
   if (fs.existsSync(logoPath)) {
@@ -56,6 +58,14 @@ app.get('/favicon.ico', (req, res) => {
   }
   return res.status(204).end();
 });
+
+// Serve static files BEFORE rate limiting
+app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
+app.use('/assest', express.static('assest'));
+
+// Apply rate limiting only to API routes
+app.use('/api/', limiter);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/saicare_cne_registration')
