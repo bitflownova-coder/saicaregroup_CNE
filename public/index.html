@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNE Registration - Sai Care Group of Institutes</title>
+    <link rel="icon" href="/assest/logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="/assest/logo.png">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>SAI CARE GROUP OF INSTITUTES</h1>
+            <h2>CNE Registration 2025</h2>
+            <div class="counter" id="registrationCounter">
+                Loading...
+            </div>
+            <div class="nav-links" style="margin-top:16px;">
+                <a href="/view-registration" class="nav-btn">View My Registration</a>
+            </div>
+
+            <div class="hero-grid">
+                <div class="stat-card">
+                    <h4>Seat Allocation</h4>
+                    <div class="value" id="seatValue">500</div>
+                    <span style="color:#6b7280; font-size:0.9rem;">Total seats available</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Payment Mode</h4>
+                    <div class="value">PhonePe QR</div>
+                    <span style="color:#6b7280; font-size:0.9rem;">Scan & pay instantly</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Verification</h4>
+                    <div class="value">MNC UID + Mobile</div>
+                    <span style="color:#6b7280; font-size:0.9rem;">Secure access anytime</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alertMessage" class="alert"></div>
+
+        <!-- Experience Section -->
+        <div class="glow-card">
+            <div class="pill">⚡ Quick 3-step registration</div>
+            <h3 class="section-title">Register, Pay, Confirm — in minutes</h3>
+            <p class="section-sub">Follow the steps below to secure your seat. You will receive a Form Number (1-500) and must print the form for workshop entry.</p>
+            <div class="steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h5>Fill your details</h5>
+                        <p>Enter name, MNC Registration Number, MNC UID, and mobile number accurately.</p>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h5>Scan & pay</h5>
+                        <p>Use the PhonePe QR to pay, then enter the UTR and upload the screenshot.</p>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h5>Confirm & download</h5>
+                        <p>Review the disclaimer, submit, then download and print your numbered form.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="form-card" id="formCard">
+            <form id="registrationForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="fullName">Full Name <span class="required">*</span></label>
+                    <input type="text" id="fullName" name="fullName" required>
+                    <div class="error-message" id="fullNameError">Please enter your full name</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="mncRegistrationNumber">MNC Registration Number <span class="required">*</span></label>
+                    <input type="text" id="mncRegistrationNumber" name="mncRegistrationNumber" required>
+                    <div class="error-message" id="mncRegistrationNumberError">Please enter your MNC registration number</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="mncUID">MNC UID <span class="required">*</span></label>
+                    <input type="text" id="mncUID" name="mncUID" required>
+                    <div class="error-message" id="mncUIDError">Please enter your MNC UID</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="mobileNumber">Mobile Number <span class="required">*</span></label>
+                    <input type="tel" id="mobileNumber" name="mobileNumber" pattern="[0-9]{10}" maxlength="10" required>
+                    <div class="error-message" id="mobileNumberError">Please enter a valid 10-digit mobile number</div>
+                </div>
+
+                <!-- QR Code Section -->
+                <div class="qr-section">
+                    <h3>Scan & Pay Using PhonePe</h3>
+                    <img src="/assest/PaymentQR.jpeg" alt="PhonePe Payment QR Code" style="max-width: 420px; width: 100%;">
+                    <p>Scan the QR code above to make payment</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="paymentUTR">Payment UTR / Transaction ID <span class="required">*</span></label>
+                    <input type="text" id="paymentUTR" name="paymentUTR" required>
+                    <div class="error-message" id="paymentUTRError">Please enter your payment UTR or transaction ID</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="paymentScreenshot">Payment Screenshot <span class="required">*</span></label>
+                    <div class="file-upload">
+                        <input type="file" id="paymentScreenshot" name="paymentScreenshot" accept="image/jpeg,image/jpg,image/png" required>
+                        <label for="paymentScreenshot" class="file-upload-label">Choose File</label>
+                        <span class="file-name" id="fileName">No file chosen</span>
+                    </div>
+                    <div class="error-message" id="paymentScreenshotError">Please upload payment screenshot (JPEG, JPG, or PNG)</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
+                    Submit Registration
+                </button>
+            </form>
+
+            <div class="spinner" id="loadingSpinner"></div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚠️ Confirm Your Registration</h2>
+            </div>
+
+            <div class="disclaimer">
+                <strong>IMPORTANT DISCLAIMER:</strong>
+                <p>Please verify all details carefully. If MNC Registration Number or MNC UID is incorrect, we are NOT liable for credits not being added to your account.</p>
+            </div>
+
+            <div class="review-details" id="reviewDetails">
+                <!-- Details will be populated by JavaScript -->
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBtn">Review Again</button>
+                <button class="btn btn-primary" id="confirmBtn">Confirm & Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/registration.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - CNE</title>
+    <link rel="icon" href="/assest/logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="/assest/logo.png">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container admin-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>SAI CARE GROUP OF INSTITUTES</h1>
+            <h2>Admin Dashboard - CNE Registration 2025</h2>
+            <div class="nav-links">
+                <a href="/" class="nav-btn">Registration Form</a>
+                <button class="nav-btn" id="logoutBtn" style="background: var(--error-color); color: white; border: none;">Logout</button>
+            </div>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alertMessage" class="alert"></div>
+
+        <!-- Stats Dashboard -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Registrations</h3>
+                <div class="value" id="totalCount">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Remaining Slots</h3>
+                <div class="value" id="remainingCount">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Capacity Filled</h3>
+                <div class="value" id="percentageFilled">-</div>
+            </div>
+        </div>
+
+        <!-- Registrations Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3 style="color: var(--primary-color); margin: 0;">All Registrations</h3>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="searchBox" class="search-box" placeholder="Search by name, MNC UID, mobile...">
+                    <button class="btn btn-primary" id="downloadExcelBtn">
+                        📊 Download Excel
+                    </button>
+                </div>
+            </div>
+
+            <div id="tableContent">
+                <div class="spinner show" style="margin: 40px auto;"></div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" style="margin-top: 20px; text-align: center; display: none;">
+                <!-- Pagination will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- View Details Modal -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Registration Details</h2>
+            </div>
+            <div id="modalDetails">
+                <!-- Details will be populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeModalBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+</html>
