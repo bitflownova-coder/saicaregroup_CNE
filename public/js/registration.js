@@ -44,7 +44,7 @@ async function loadRegistrationCount() {
             registrationCount = data;
             
             if (data.isFull) {
-                counter.textContent = 'Registration Closed - All 500 Seats Filled';
+                counter.textContent = `Registration Closed - All ${data.maxRegistrations} Seats Filled`;
                 counter.classList.add('full');
                 showClosedMessage();
             } else {
@@ -53,7 +53,7 @@ async function loadRegistrationCount() {
 
             const seatValue = document.getElementById('seatValue');
             if (seatValue) {
-                seatValue.textContent = `${data.maxRegistrations} seats`;
+                seatValue.textContent = `${data.remaining}/${data.maxRegistrations}`;
             }
         }
     } catch (error) {
@@ -68,7 +68,7 @@ function showClosedMessage() {
     formCard.className = 'form-card closed';
     formCard.innerHTML = `
         <h2>❌ Registration Closed</h2>
-        <p>We're sorry, but all 500 seats have been filled.</p>
+        <p>We're sorry, but all ${registrationCount.maxRegistrations} seats have been filled.</p>
         <p>Thank you for your interest!</p>
         <div style="margin-top: 30px;">
             <a href="/view-registration" class="btn btn-primary">View Your Registration</a>
@@ -102,7 +102,7 @@ function handleFormSubmit(e) {
 
     // Check if registration is full
     if (registrationCount && registrationCount.isFull) {
-        showAlert('Registration is closed. All 500 seats are filled.', 'error');
+        showAlert(`Registration is closed. All ${registrationCount.maxRegistrations} seats are filled.`, 'error');
         return;
     }
 
