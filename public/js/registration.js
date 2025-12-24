@@ -55,6 +55,11 @@ async function loadRegistrationCount() {
             if (seatValue) {
                 seatValue.textContent = `${data.remaining}/${data.maxRegistrations}`;
             }
+            
+            const seatValueTop = document.getElementById('seatValueTop');
+            if (seatValueTop) {
+                seatValueTop.textContent = `${data.remaining}/${data.maxRegistrations}`;
+            }
         }
     } catch (error) {
         console.error('Error loading count:', error);
