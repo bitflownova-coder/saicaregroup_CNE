@@ -40,30 +40,23 @@ async function loadRegistrationCount() {
 
         const counter = document.getElementById('registrationCounter');
         
-        if (data.success) {
-            registrationCount = data;
-            
-            if (data.isFull) {
-                counter.textContent = `Registration Closed - All ${data.maxRegistrations} Seats Filled`;
-                counter.classList.add('full');
-                showClosedMessage();
-            } else {
-                counter.textContent = `Registrations Remaining: ${data.remaining}/${data.maxRegistrations}`;
-            }
-
-            const seatValue = document.getElementById('seatValue');
-            if (seatValue) {
-                seatValue.textContent = `${data.remaining}/${data.maxRegistrations}`;
-            }
-            
-            const seatValueTop = document.getElementById('seatValueTop');
-            if (seatValueTop) {
-                seatValueTop.textContent = `${data.remaining}/${data.maxRegistrations}`;
-            }
+        // Force show closed message
+        counter.textContent = 'Registration Closed';
+        counter.classList.add('full');
+        
+        const seatValueTop = document.getElementById('seatValueTop');
+        if (seatValueTop) {
+            seatValueTop.textContent = 'Closed';
         }
+        
+        // Form is already closed in HTML, no need to call showClosedMessage
     } catch (error) {
         console.error('Error loading count:', error);
-        showAlert('Error loading registration status', 'error');
+        const counter = document.getElementById('registrationCounter');
+        if (counter) {
+            counter.textContent = 'Registration Closed';
+            counter.classList.add('full');
+        }
     }
 }
 

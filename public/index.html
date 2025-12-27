@@ -112,70 +112,20 @@
         </div>
 
         <!-- Registration Form -->
-        <div class="form-card" id="formCard">
-            <form id="registrationForm" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="fullName">Full Name <span class="required">*</span></label>
-                    <input type="text" id="fullName" name="fullName" required>
-                    <div class="error-message" id="fullNameError">Please enter your full name</div>
+        <div class="form-card closed" id="formCard">
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 4rem; margin-bottom: 20px;">🚫</div>
+                <h2 style="color: #dc3545; margin-bottom: 16px; font-size: 2rem;">Registration Closed</h2>
+                <p style="font-size: 1.1rem; color: var(--text-dark); margin-bottom: 20px; line-height: 1.6;">
+                    The registration form is now closed. We are no longer accepting new registrations.
+                </p>
+                <p style="font-size: 1rem; color: var(--text-muted); margin-bottom: 30px;">
+                    Thank you for your interest!
+                </p>
+                <div style="margin-top: 30px;">
+                    <a href="/view-registration" class="btn btn-primary" style="display: inline-block;">View Your Registration</a>
                 </div>
-
-                <div class="form-group">
-                    <label for="mncRegistrationNumber">MNC Registration Number <span class="required">*</span></label>
-                    <input type="text" id="mncRegistrationNumber" name="mncRegistrationNumber" required>
-                    <div class="error-message" id="mncRegistrationNumberError">Please enter your MNC registration number</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="mncUID">MNC UID <span class="required">*</span></label>
-                    <input type="text" id="mncUID" name="mncUID" required>
-                    <div class="error-message" id="mncUIDError">Please enter your MNC UID</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="mobileNumber">Mobile Number <span class="required">*</span></label>
-                    <input type="tel" id="mobileNumber" name="mobileNumber" pattern="[0-9]{10}" maxlength="10" required>
-                    <div class="error-message" id="mobileNumberError">Please enter a valid 10-digit mobile number</div>
-                </div>
-
-                <!-- QR Code Section -->
-                <div class="qr-section">
-                    <h3>Scan & Pay Using PhonePe</h3>
-                    <img src="/assest/PaymentQR.jpeg" alt="PhonePe Payment QR Code" style="max-width: 300px; width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <p style="margin: 12px 0 6px 0; font-weight: 600; color: var(--text-dark);">Scan the QR code above to make payment</p>
-                    
-                    <div style="margin: 20px 0; padding: 10px 0; border-top: 2px solid var(--border-color); border-bottom: 2px solid var(--border-color);">
-                        <p style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--primary-color); text-align: center; letter-spacing: 2px;">OR</p>
-                    </div>
-                    
-                    <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; border: 2px solid var(--primary-color); margin-top: 20px;">
-                        <p style="margin: 0 0 8px 0; font-weight: 600; color: var(--text-dark); text-align: center; font-size: 1rem;">Pay Using UPI ID</p>
-                        <p style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--primary-color); font-family: monospace; text-align: center; background: white; padding: 12px; border-radius: 6px; border: 1px dashed var(--primary-color);">bajadhav333-2@okhdfcbacnk</p>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="paymentUTR">Payment UTR / Transaction ID <span class="required">*</span></label>
-                    <input type="text" id="paymentUTR" name="paymentUTR" required>
-                    <div class="error-message" id="paymentUTRError">Please enter your payment UTR or transaction ID</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="paymentScreenshot">Payment Screenshot <span class="required">*</span></label>
-                    <div class="file-upload">
-                        <input type="file" id="paymentScreenshot" name="paymentScreenshot" accept="image/jpeg,image/jpg,image/png" required>
-                        <label for="paymentScreenshot" class="file-upload-label">Choose File</label>
-                        <span class="file-name" id="fileName">No file chosen</span>
-                    </div>
-                    <div class="error-message" id="paymentScreenshotError">Please upload payment screenshot (JPEG, JPG, or PNG)</div>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
-                    Submit Registration
-                </button>
-            </form>
-
-            <div class="spinner" id="loadingSpinner"></div>
+            </div>
         </div>
     </div>
 
