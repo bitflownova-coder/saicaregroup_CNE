@@ -41,12 +41,12 @@ async function loadRegistrationCount() {
         const counter = document.getElementById('registrationCounter');
         
         // Force show closed message
-        counter.textContent = 'Registration Closed';
+        counter.textContent = 'Current CNE Registration Closed - Admission Full';
         counter.classList.add('full');
         
         const seatValueTop = document.getElementById('seatValueTop');
         if (seatValueTop) {
-            seatValueTop.textContent = 'Closed';
+            seatValueTop.textContent = 'Full (Next CNE dates coming soon)';
         }
         
         // Form is already closed in HTML, no need to call showClosedMessage
@@ -54,7 +54,7 @@ async function loadRegistrationCount() {
         console.error('Error loading count:', error);
         const counter = document.getElementById('registrationCounter');
         if (counter) {
-            counter.textContent = 'Registration Closed';
+            counter.textContent = 'Current CNE Registration Closed - Admission Full';
             counter.classList.add('full');
         }
     }
