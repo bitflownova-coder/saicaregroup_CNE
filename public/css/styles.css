@@ -300,7 +300,7 @@ body {
 }
 
 .qr-section img {
-  max-width: 90%;
+  max-width: min(90%, 400px);
   width: auto;
   height: auto;
   border-radius: 8px;
