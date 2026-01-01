@@ -300,13 +300,12 @@ body {
 }
 
 .qr-section img {
-  max-width: 100%;
+  max-width: 90%;
+  width: auto;
   height: auto;
   border-radius: 8px;
-  max-height: 500px;
-  width: auto;
-  margin: 0 auto;
   display: block;
+  margin: 0 auto;
 }
 
 .qr-section p {
@@ -666,11 +665,6 @@ body {
     font-size: 2rem;
   }
 
-  .qr-section img {
-    max-height: 350px;
-    max-width: 350px;
-  }
-
   /* Make table scrollable on mobile */
   .table-container {
     overflow-x: auto;
@@ -826,11 +820,6 @@ body {
 
   .qr-section {
     padding: 16px 12px;
-  }
-
-  .qr-section img {
-    max-height: 280px;
-    max-width: 280px;
   }
 
   .qr-section h3 {
