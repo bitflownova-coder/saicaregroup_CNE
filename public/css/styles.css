@@ -314,6 +314,45 @@ body {
   font-size: 0.95rem;
 }
 
+/* Payment Section & QR Code */
+.payment-section {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 12px;
+  margin: 25px 0;
+  border: 2px solid var(--border-color);
+}
+
+.payment-section h4 {
+  color: var(--text-dark);
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.payment-instruction {
+  color: var(--text-light);
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+}
+
+.qr-container {
+  background: #000;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  margin: 15px 0;
+}
+
+.payment-qr {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+}
+
+
 /* File Upload */
 .file-upload {
   position: relative;
@@ -669,6 +708,10 @@ body {
     max-width: 220px;
   }
 
+  .payment-qr {
+    max-width: 220px;
+  }
+
   /* Make table scrollable on mobile */
   .table-container {
     overflow-x: auto;
@@ -828,6 +871,10 @@ body {
   }
 
   .qr-section img {
+    max-width: 160px;
+  }
+
+  .payment-qr {
     max-width: 160px;
   }
 
