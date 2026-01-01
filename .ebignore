@@ -1,0 +1,9 @@
+# Elastic Beanstalk ignore file
+node_modules/
+.git/
+.gitignore
+.env
+*.log
+.DS_Store
+backups/
+.vscode/

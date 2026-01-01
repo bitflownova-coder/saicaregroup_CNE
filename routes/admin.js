@@ -17,9 +17,20 @@ router.post('/login', async (req, res) => {
       req.session.isAdmin = true;
       req.session.username = username;
       
-      res.json({
-        success: true,
-        message: 'Login successful'
+      // Explicitly save the session
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({
+            success: false,
+            message: 'Session error'
+          });
+        }
+        
+        res.json({
+          success: true,
+          message: 'Login successful'
+        });
       });
     } else {
       res.status(401).json({
@@ -28,6 +39,7 @@ router.post('/login', async (req, res) => {
       });
     }
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
       message: 'Login error'
