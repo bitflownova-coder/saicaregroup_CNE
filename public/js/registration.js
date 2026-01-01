@@ -35,18 +35,27 @@ function setupEventListeners() {
 // Load registration count
 async function loadRegistrationCount() {
     try {
-        const response = await fetch('/api/registration/count');
+        // Add timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/registration/count?t=${timestamp}`);
         const data = await response.json();
 
         const counter = document.getElementById('registrationCounter');
+        registrationCount = data.total || 0;  // Changed from data.count to data.total
+        const remaining = data.remaining || 500;
         
-        // Force show closed message
-        counter.textContent = 'Current CNE Registration Closed - Admission Full';
-        counter.classList.add('full');
+        // Show actual seat availability
+        counter.innerHTML = `<span style="font-size: 1.8rem; font-weight: 700;">${registrationCount}/500</span> Registered`;
         
         const seatValueTop = document.getElementById('seatValueTop');
         if (seatValueTop) {
-            seatValueTop.textContent = 'Full (Next CNE dates coming soon)';
+            if (remaining > 0) {
+                seatValueTop.innerHTML = `<span style="color: #28a745; font-weight: 700;">${remaining} Available</span>`;
+            } else {
+                seatValueTop.textContent = 'Full';
+                counter.textContent = 'Registration Closed - Admission Full';
+                counter.classList.add('full');
+            }
         }
         
         // Form is already closed in HTML, no need to call showClosedMessage
@@ -177,19 +186,27 @@ function validateForm() {
 // Show field error
 function showFieldError(fieldName) {
     const field = document.getElementById(fieldName);
+    if (field) {
+        field.classList.add('error');
+        field.style.borderColor = '#dc3545';
+    }
     const error = document.getElementById(fieldName + 'Error');
-    
-    field.classList.add('error');
-    error.classList.add('show');
+    if (error) {
+        error.classList.add('show');
+    }
 }
 
 // Hide field error
 function hideFieldError(fieldName) {
     const field = document.getElementById(fieldName);
+    if (field) {
+        field.classList.remove('error');
+        field.style.borderColor = '';
+    }
     const error = document.getElementById(fieldName + 'Error');
-    
-    field.classList.remove('error');
-    error.classList.remove('show');
+    if (error) {
+        error.classList.remove('show');
+    }
 }
 
 // Show review modal
@@ -252,18 +269,28 @@ async function confirmSubmission() {
 
         if (data.success) {
             const formNumText = data.data.formNumber ? `Form Number: ${data.data.formNumber}` : '';
-            showAlert(`Registration successful! ${formNumText} Your MNC UID ${data.data.mncUID} has been registered.`, 'success');
+            
+            // Update button to show success
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.textContent = '✅ Registration Successful!';
+            submitBtn.style.background = '#28a745';
+            submitBtn.disabled = true;
+            
+            showAlert(`✅ Registration Successful! ${formNumText} Your MNC UID ${data.data.mncUID} has been registered. Redirecting to view page...`, 'success');
             
             // Reset form
-            document.getElementById('registrationForm').reset();
-            document.getElementById('fileName').textContent = 'No file chosen';
+            setTimeout(() => {
+                document.getElementById('registrationForm').reset();
+                const fileNameDisplay = document.getElementById('fileName');
+                if (fileNameDisplay) fileNameDisplay.textContent = 'No file chosen';
+            }, 1000);
             
             // Reload count
             loadRegistrationCount();
 
             // Redirect to view page after 3 seconds
             setTimeout(() => {
-                window.location.href = `/view-registration?mncUID=${data.data.mncUID}`;
+                window.location.href = `/view-registration?mncUID=${data.data.mncUID}&mobile=${data.data.mobileNumber}`;
             }, 3000);
         } else {
             showAlert(data.message || 'Registration failed. Please try again.', 'error');

@@ -4,3 +4,4 @@ uploads/payments/*
 !uploads/payments/.gitkeep
 *.log
 .DS_Store
+backups/

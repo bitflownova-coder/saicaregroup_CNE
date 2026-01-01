@@ -13,7 +13,7 @@
         <!-- Header -->
         <div class="header">
             <h1>SAI CARE GROUP OF INSTITUTES</h1>
-            <h2>CNE Registration 2025</h2>
+            <h2>CNE Registration 2026</h2>
             <div class="counter" id="registrationCounter">
                 Loading...
             </div>
@@ -43,18 +43,18 @@
                     
                     <div style="margin-bottom: 14px;">
                         <strong style="color: var(--text-dark); font-size: 1rem;">CNE Topic:</strong>
-                        <span style="color: var(--text-dark); font-size: 1rem; margin-left: 8px;">Roll Of Nurses In Depression Management.</span>
+                        <span style="color: var(--text-dark); font-size: 1rem; margin-left: 8px;">NATIONAL HEALTH PROGRAMMES</span>
                     </div>
                     
                     <div style="margin-bottom: 14px;">
                         <strong style="color: var(--text-dark); font-size: 1rem;">CNE Date:</strong>
-                        <span style="color: var(--text-dark); font-size: 1rem; margin-left: 8px;">28/12/2025 (SUNDAY)</span>
+                        <span style="color: var(--text-dark); font-size: 1rem; margin-left: 8px;">04/01/2026 (SATURDAY)</span>
                     </div>
                     
                     <div style="margin-bottom: 16px;">
                         <strong style="color: var(--text-dark); font-size: 1rem;">CNE VENUE (Address):</strong>
                         <a href="https://share.google/6RTz3qtkGG1O2WzOj" target="_blank" style="color: var(--primary-color); font-size: 0.95rem; margin-left: 8px; display: block; margin-top: 6px; line-height: 1.6; text-decoration: underline;">
-                            Sai Care College Of Nursing Nashik. Servey No. 134, Near Kishor Suryawanshi School, Behind MUHS University, Dindori Road, Manori, Nashik. PIN- 422004
+                            SAI CARE COLLEGE OF NURSING NASHIK, SERVEY NO 134, NEAR KISHOR SURYAWANSHI SCHOOL, BEHIND MUHS UNIVERSITY, DINDORI ROAD, MANORI, NASHIK. PIN- 422004
                         </a>
                     </div>
                     
@@ -112,33 +112,56 @@
         </div>
 
         <!-- Registration Form -->
-        <div class="form-card closed" id="formCard">
-            <div style="text-align: center; padding: 40px 20px;">
-                <div style="font-size: 4rem; margin-bottom: 30px;">🎓</div>
-                <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 24px; border-radius: 12px; margin: 0 0 30px 0; border-left: 4px solid #4caf50;">
-                    <h3 style="color: #2e7d32; margin-bottom: 12px; font-size: 1.3rem;">📅 More CNE Workshops Coming Soon!</h3>
-                    <p style="color: #1b5e20; margin-bottom: 12px; line-height: 1.6;">
-                        We regularly organize Continuing Nursing Education (CNE) workshops at <strong>Sai Care Group of Institutes</strong>. Stay connected with us as we will announce the dates for our upcoming CNE programs shortly.
-                    </p>
-                    <div style="background: white; padding: 16px; border-radius: 8px; margin-top: 16px;">
-                        <p style="color: #2e7d32; margin: 0 0 8px 0; font-weight: 600;">For updates on future workshops:</p>
-                        <ul style="text-align: left; color: #1b5e20; margin: 0; padding-left: 24px; line-height: 1.8;">
-                            <li>Check this website regularly</li>
-                            <li>Contact us for more information</li>
-                        </ul>
+        <div class="form-card" id="formCard">
+            <h3 class="section-title">Register for CNE Workshop</h3>
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label for="fullName">Full Name *</label>
+                    <input type="text" id="fullName" name="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="mncUID">MNC UID *</label>
+                    <input type="text" id="mncUID" name="mncUID" placeholder="e.g., MNC2024001" required>
+                    <small>Enter your MNC Unique Identification Number</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="mncRegistrationNumber">MNC Registration Number *</label>
+                    <input type="text" id="mncRegistrationNumber" name="mncRegistrationNumber" placeholder="e.g., REG/MH/2024/001" required>
+                    <small>Enter your MNC Registration Number</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="mobileNumber">Mobile Number *</label>
+                    <input type="tel" id="mobileNumber" name="mobileNumber" pattern="[0-9]{10}" placeholder="10-digit mobile number" required>
+                </div>
+
+                <div class="payment-section">
+                    <h4>Payment Details</h4>
+                    <p class="payment-instruction">Scan the QR code below to pay ₹500/- via PhonePe/UPI</p>
+                    <div class="qr-container">
+                        <img src="/assest/PaymentQR.jpeg" alt="Payment QR Code" class="payment-qr">
                     </div>
                 </div>
-                <h2 style="color: #dc3545; margin-bottom: 16px; font-size: 2rem;">Current CNE Registration Closed - Admission Full</h2>
-                <p style="font-size: 1.1rem; color: var(--text-dark); margin-bottom: 20px; line-height: 1.6; font-weight: 600;">
-                    Thank you for your interest in our CNE Workshop!
-                </p>
-                <p style="font-size: 1rem; color: var(--text-dark); margin-bottom: 30px; line-height: 1.6;">
-                    All seats for the upcoming CNE on <strong>28th December 2025</strong> have been filled.
-                </p>
-                <div style="margin-top: 30px;">
-                    <a href="/view-registration" class="btn btn-primary" style="display: inline-block;">View Your Registration (if already registered)</a>
+
+                <div class="form-group">
+                    <label for="paymentUTR">Payment UTR Number *</label>
+                    <input type="text" id="paymentUTR" name="paymentUTR" placeholder="12-digit UTR/Transaction ID" required>
+                    <small>Enter the 12-digit UTR/Transaction ID from payment confirmation</small>
                 </div>
-            </div>
+
+                <div class="form-group">
+                    <label for="paymentScreenshot">Payment Screenshot *</label>
+                    <input type="file" id="paymentScreenshot" name="paymentScreenshot" accept="image/*" required>
+                    <small id="fileName" style="display: block; margin-top: 8px; color: var(--primary-color); font-weight: 500;">No file chosen</small>
+                    <small>Upload screenshot of payment confirmation (Max 5MB)</small>
+                </div>
+
+                <div class="spinner" id="loadingSpinner"></div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-submit">Register Now</button>
+            </form>
         </div>
     </div>
 
