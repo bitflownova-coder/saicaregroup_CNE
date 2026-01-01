@@ -300,8 +300,8 @@ body {
 }
 
 .qr-section img {
-  max-width: min(90%, 400px);
-  width: auto;
+  max-width: 400px;
+  width: 100%;
   height: auto;
   border-radius: 8px;
   display: block;
@@ -665,6 +665,10 @@ body {
     font-size: 2rem;
   }
 
+  .qr-section img {
+    max-width: 320px;
+  }
+
   /* Make table scrollable on mobile */
   .table-container {
     overflow-x: auto;
@@ -820,6 +824,10 @@ body {
 
   .qr-section {
     padding: 16px 12px;
+  }
+
+  .qr-section img {
+    max-width: 280px;
   }
 
   .qr-section h3 {
