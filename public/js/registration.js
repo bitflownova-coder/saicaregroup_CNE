@@ -55,6 +55,18 @@ async function loadRegistrationCount() {
                 seatValueTop.textContent = 'Full';
                 counter.textContent = 'Registration Closed - Admission Full';
                 counter.classList.add('full');
+                
+                // Hide payment section when full
+                const paymentSection = document.querySelector('.payment-section');
+                if (paymentSection) {
+                    paymentSection.style.display = 'none';
+                }
+                
+                // Hide the entire form
+                const formCard = document.getElementById('formCard');
+                if (formCard) {
+                    formCard.style.display = 'none';
+                }
             }
         }
         
