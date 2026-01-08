@@ -144,7 +144,6 @@ function showCreateModal() {
     document.getElementById('modalTitle').textContent = 'Create Workshop';
     document.getElementById('workshopForm').reset();
     document.getElementById('workshopId').value = '';
-    document.getElementById('qrPreview').style.display = 'none';
     document.getElementById('dayOfWeek').value = '';
     document.getElementById('workshopModal').style.display = 'block';
 }
