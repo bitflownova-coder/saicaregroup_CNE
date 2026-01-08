@@ -1,8 +1,6 @@
-// Admin Dashboard Handler
-let allRegistrations = [];
-let currentPage = 1;
-let searchTerm = '';
+// Admin Dashboard Handler - Mobile-Friendly Version
 let selectedWorkshopId = '';
+let searchTerm = '';
 
 // Check authentication on load
 document.addEventListener('DOMContentLoaded', () => {
@@ -22,7 +20,6 @@ async function checkAuth() {
         }
         
         // Load dashboard data
-        loadStats();
         loadWorkshops();
         loadRegistrations();
     } catch (error) {
@@ -37,19 +34,15 @@ function setupEventListeners() {
     const downloadExcelBtn = document.getElementById('downloadExcelBtn');
     const searchBox = document.getElementById('searchBox');
     const workshopFilter = document.getElementById('workshopFilter');
-    const closeModalBtn = document.getElementById('closeModalBtn');
 
     logoutBtn.addEventListener('click', handleLogout);
     downloadExcelBtn.addEventListener('click', downloadExcel);
-    closeModalBtn.addEventListener('click', closeModal);
 
-    // Workshop filter - update both stats and registrations
+    // Workshop filter
     workshopFilter.addEventListener('change', (e) => {
         selectedWorkshopId = e.target.value;
-        currentPage = 1;
-        loadStats(selectedWorkshopId); // Update stats for selected workshop
+        loadStats(selectedWorkshopId);
         loadRegistrations();
-        loadWorkshopDetails(selectedWorkshopId); // Load workshop details
     });
 
     // Search with debounce
@@ -58,7 +51,6 @@ function setupEventListeners() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             searchTerm = e.target.value;
-            currentPage = 1;
             loadRegistrations();
         }, 500);
     });
@@ -82,17 +74,9 @@ async function loadWorkshops() {
                     month: 'short', 
                     day: 'numeric' 
                 });
-                option.textContent = `${workshop.title} - ${date} (${workshop.status})`;
+                option.textContent = `${workshop.title} - ${date}`;
                 workshopFilter.appendChild(option);
             });
-
-            // Check if specific workshop is requested in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const workshopId = urlParams.get('workshopId');
-            if (workshopId) {
-                workshopFilter.value = workshopId;
-                selectedWorkshopId = workshopId;
-            }
         }
     } catch (error) {
         console.error('Error loading workshops:', error);
@@ -103,7 +87,6 @@ async function loadWorkshops() {
 async function loadStats(workshopId = '') {
     const statsSection = document.getElementById('statsSection');
     
-    // Only show stats if a specific workshop is selected
     if (!workshopId) {
         statsSection.style.display = 'none';
         return;
@@ -125,53 +108,13 @@ async function loadStats(workshopId = '') {
     }
 }
 
-// Load workshop details into dashboard header
-async function loadWorkshopDetails(workshopId) {
-    const workshopInfo = document.getElementById('workshopInfo');
-    
-    if (!workshopId) {
-        // Show "All Workshops" view
-        workshopInfo.innerHTML = `
-            <h1 class="workshop-title">All Workshops</h1>
-            <div class="workshop-meta">
-                <span><i class="fas fa-calendar-alt"></i> View All</span>
-            </div>
-        `;
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/api/admin/stats?workshopId=${workshopId}`);
-        const data = await response.json();
-        
-        if (data.success && data.stats.workshop) {
-            const workshop = data.stats.workshop;
-            const date = new Date(workshop.date).toLocaleDateString('en-IN', { 
-                day: '2-digit',
-                month: '2-digit', 
-                year: 'numeric' 
-            });
-            
-            workshopInfo.innerHTML = `
-                <h1 class="workshop-title">${workshop.title}</h1>
-                <div class="workshop-meta">
-                    <span><i class="fas fa-calendar-alt"></i> ${date}</span>
-                    <span><i class="fas fa-rupee-sign"></i> ${workshop.fee}/-</span>
-                    <span><i class="fas fa-award"></i> ${workshop.credits} CME Credits</span>
-                    <span><i class="fas fa-map-marker-alt"></i> ${workshop.venue}</span>
-                    <span class="status-badge status-${workshop.status.toLowerCase()}">${workshop.status}</span>
-                </div>
-            `;
-        }
-    } catch (error) {
-        console.error('Error loading workshop details:', error);
-    }
-}
-
 // Load registrations
 async function loadRegistrations() {
+    const listContainer = document.getElementById('registrationsList');
+    listContainer.innerHTML = '<div class="spinner"></div>';
+    
     try {
-        let url = `/api/admin/registrations?page=${currentPage}&limit=50&search=${searchTerm}`;
+        let url = `/api/admin/registrations?limit=1000&search=${searchTerm}`;
         if (selectedWorkshopId) {
             url += `&workshopId=${selectedWorkshopId}`;
         }
@@ -180,270 +123,163 @@ async function loadRegistrations() {
         const data = await response.json();
         
         if (data.success) {
-            // Ensure table is ordered by form number ascending
-            allRegistrations = (data.data || []).slice().sort((a, b) => (a.formNumber || 0) - (b.formNumber || 0));
-            displayRegistrations(allRegistrations);
-            
-            if (data.pagination.pages > 1) {
-                displayPagination(data.pagination);
-            }
+            const registrations = (data.data || []).sort((a, b) => (a.formNumber || 0) - (b.formNumber || 0));
+            displayRegistrations(registrations);
         }
     } catch (error) {
         console.error('Error loading registrations:', error);
-        showAlert('Error loading registrations', 'error');
+        listContainer.innerHTML = '<div class="empty-state"><h3>Error loading registrations</h3><p>Please try again</p></div>';
     }
 }
 
-// Display registrations in table
+// Display registrations as cards
 function displayRegistrations(registrations) {
-    const tableContent = document.getElementById('tableContent');
+    const listContainer = document.getElementById('registrationsList');
     
     if (registrations.length === 0) {
-        tableContent.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-light);">No registrations found</p>';
+        listContainer.innerHTML = '<div class="empty-state"><h3>No registrations found</h3><p>Try changing the filters</p></div>';
         return;
     }
 
-    let tableHTML = `
-        <table>
-            <thead>
-                <tr>
-                    <th>Form No</th>
-                    <th>Full Name</th>
-                    <th>MNC UID</th>
-                    <th>MNC Reg No.</th>
-                    <th>Mobile</th>
-                    <th>Payment UTR</th>
-                    <th>Downloads</th>
-                    <th>Submitted</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-    registrations.forEach((reg, index) => {
-        const submittedDate = new Date(reg.submittedAt).toLocaleDateString('en-IN');
-        const downloadBadge = reg.downloadCount >= 2 ? 
-            '<span class="badge badge-warning">2/2</span>' : 
-            `<span class="badge badge-success">${reg.downloadCount}/2</span>`;
-
-        tableHTML += `
-            <tr>
-                <td>${reg.formNumber || '-'}</td>
-                <td>${reg.fullName}</td>
-                <td>${reg.mncUID}</td>
-                <td>${reg.mncRegistrationNumber}</td>
-                <td>${reg.mobileNumber}</td>
-                <td>${reg.paymentUTR}</td>
-                <td>${downloadBadge}</td>
-                <td>${submittedDate}</td>
-                <td>
-                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="viewDetails('${reg._id}')">
-                        View
+    let cardsHTML = '';
+    
+    registrations.forEach(reg => {
+        const submittedDate = new Date(reg.submittedAt).toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+        
+        cardsHTML += `
+            <div class="registration-card">
+                <div class="reg-header">
+                    <div class="reg-name">${escapeHtml(reg.fullName)}</div>
+                    <div class="reg-form-no">Form ${reg.formNumber || '-'}</div>
+                </div>
+                <div class="reg-details">
+                    <div class="reg-detail-row">
+                        <span class="reg-detail-label">MNC UID:</span>
+                        <span>${escapeHtml(reg.mncUID)}</span>
+                    </div>
+                    <div class="reg-detail-row">
+                        <span class="reg-detail-label">Mobile:</span>
+                        <span>${reg.mobileNumber}</span>
+                    </div>
+                    <div class="reg-detail-row">
+                        <span class="reg-detail-label">Payment UTR:</span>
+                        <span>${reg.paymentUTR}</span>
+                    </div>
+                    <div class="reg-detail-row">
+                        <span class="reg-detail-label">Submitted:</span>
+                        <span>${submittedDate}</span>
+                    </div>
+                    <div class="reg-detail-row">
+                        <span class="reg-detail-label">Downloads:</span>
+                        <span style="color: ${reg.downloadCount >= 2 ? '#ef4444' : '#10b981'}; font-weight: 700;">${reg.downloadCount}/2</span>
+                    </div>
+                </div>
+                <div class="reg-actions">
+                    <button class="btn btn-primary btn-small" onclick="viewPayment('${reg.paymentScreenshot}')">
+                        View Payment
                     </button>
-                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem; background:#ef4444; color:white; border:none; margin-left:6px;" onclick="deleteRegistration('${reg._id}')">
+                    <button class="btn btn-danger btn-small" onclick="deleteRegistration('${reg._id}')">
                         Delete
                     </button>
-                </td>
-            </tr>
+                </div>
+            </div>
         `;
     });
-
-    tableHTML += `
-            </tbody>
-        </table>
-    `;
-
-    tableContent.innerHTML = tableHTML;
+    
+    listContainer.innerHTML = cardsHTML;
 }
 
-// Display pagination
-function displayPagination(pagination) {
-    const paginationDiv = document.getElementById('pagination');
-    paginationDiv.style.display = 'block';
-    
-    let paginationHTML = '<div style="display: flex; gap: 10px; justify-content: center; align-items: center;">';
-    
-    // Previous button
-    if (pagination.page > 1) {
-        paginationHTML += `<button class="btn btn-secondary" onclick="changePage(${pagination.page - 1})">Previous</button>`;
-    }
-    
-    // Page info
-    paginationHTML += `<span style="padding: 0 20px;">Page ${pagination.page} of ${pagination.pages}</span>`;
-    
-    // Next button
-    if (pagination.page < pagination.pages) {
-        paginationHTML += `<button class="btn btn-secondary" onclick="changePage(${pagination.page + 1})">Next</button>`;
-    }
-    
-    paginationHTML += '</div>';
-    paginationDiv.innerHTML = paginationHTML;
+// View payment screenshot
+function viewPayment(screenshotPath) {
+    window.open('/' + screenshotPath, '_blank');
 }
 
-// Change page
-function changePage(page) {
-    currentPage = page;
-    loadRegistrations();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// View registration details
-function viewDetails(id) {
-    const registration = allRegistrations.find(r => r._id === id);
-    
-    if (!registration) {
-        showAlert('Registration not found', 'error');
+// Delete registration
+async function deleteRegistration(id) {
+    if (!confirm('Are you sure you want to delete this registration?')) {
         return;
     }
-
-    const submittedDate = new Date(registration.submittedAt).toLocaleString('en-IN', {
-        dateStyle: 'long',
-        timeStyle: 'short'
-    });
-
-    const modalDetails = document.getElementById('modalDetails');
-    modalDetails.innerHTML = `
-        <div class="review-details">
-            <div class="review-item">
-                <strong>Form Number</strong>
-                <span>${registration.formNumber || 'N/A'}</span>
-            </div>
-            <div class="review-item">
-                <strong>Full Name</strong>
-                <span>${registration.fullName}</span>
-            </div>
-            <div class="review-item">
-                <strong>MNC UID</strong>
-                <span>${registration.mncUID}</span>
-            </div>
-            <div class="review-item">
-                <strong>MNC Registration Number</strong>
-                <span>${registration.mncRegistrationNumber}</span>
-            </div>
-            <div class="review-item">
-                <strong>Mobile Number</strong>
-                <span>${registration.mobileNumber}</span>
-            </div>
-            <div class="review-item">
-                <strong>Payment UTR / Transaction ID</strong>
-                <span>${registration.paymentUTR}</span>
-            </div>
-            <div class="review-item">
-                <strong>Download Count</strong>
-                <span>${registration.downloadCount}/2</span>
-            </div>
-            <div class="review-item">
-                <strong>Submitted At</strong>
-                <span>${submittedDate}</span>
-            </div>
-            <div class="review-item">
-                <strong>IP Address</strong>
-                <span>${registration.ipAddress || 'N/A'}</span>
-            </div>
-            <div class="review-item">
-                <strong>Payment Screenshot</strong>
-                <span><img src="/uploads/payments/${registration.paymentScreenshot}" style="max-width: 100%; border-radius: 8px; margin-top: 10px;" alt="Payment Screenshot"></span>
-            </div>
-        </div>
-    `;
-
-    document.getElementById('detailsModal').classList.add('show');
-}
-
-// Close modal
-function closeModal() {
-    document.getElementById('detailsModal').classList.remove('show');
+    
+    try {
+        const response = await fetch(`/api/admin/registrations/${id}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert('Registration deleted successfully', 'success');
+            loadStats(selectedWorkshopId);
+            loadRegistrations();
+        } else {
+            showAlert(data.message || 'Failed to delete registration', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting registration:', error);
+        showAlert('Error deleting registration', 'error');
+    }
 }
 
 // Download Excel
 async function downloadExcel() {
     try {
-        showAlert('Generating Excel file...', 'info');
-        
-        const response = await fetch('/api/admin/download-excel');
-        
-        if (!response.ok) {
-            throw new Error('Download failed');
+        let url = '/api/admin/export-excel';
+        if (selectedWorkshopId) {
+            url += `?workshopId=${selectedWorkshopId}`;
         }
-
-        // Get the blob
-        const blob = await response.blob();
         
-        // Create download link
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `CNE_Registrations_${Date.now()}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        const response = await fetch(url);
         
-        showAlert('Excel file downloaded successfully!', 'success');
+        if (response.ok) {
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `registrations-${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(downloadUrl);
+            
+            showAlert('Excel downloaded successfully', 'success');
+        } else {
+            showAlert('Failed to download Excel', 'error');
+        }
     } catch (error) {
-        console.error('Excel download error:', error);
-        showAlert('Error downloading Excel file', 'error');
+        console.error('Error downloading Excel:', error);
+        showAlert('Error downloading Excel', 'error');
     }
 }
 
-// Handle logout
+// Logout
 async function handleLogout() {
     try {
-        const response = await fetch('/api/admin/logout', {
-            method: 'POST'
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            window.location.href = '/admin-login';
-        }
+        await fetch('/api/admin/logout', { method: 'POST' });
+        window.location.href = '/admin-login';
     } catch (error) {
         console.error('Logout error:', error);
         window.location.href = '/admin-login';
     }
 }
 
-// Show alert message
+// Show alert
 function showAlert(message, type) {
     const alert = document.getElementById('alertMessage');
     alert.textContent = message;
-    alert.className = `alert alert-${type} show`;
+    alert.className = `alert ${type} show`;
     
     setTimeout(() => {
         alert.classList.remove('show');
-    }, 5000);
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 3000);
 }
 
-// Make viewDetails available globally
-window.viewDetails = viewDetails;
-window.changePage = changePage;
-window.deleteRegistration = deleteRegistration;
-
-// Delete registration
-async function deleteRegistration(id) {
-    const sure = confirm('Are you sure you want to delete this registration? This cannot be undone.');
-    if (!sure) return;
-
-    try {
-        const response = await fetch(`/api/admin/registrations/${id}`, {
-            method: 'DELETE'
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            showAlert('Registration deleted successfully', 'success');
-            loadRegistrations();
-            loadStats();
-        } else {
-            showAlert(data.message || 'Delete failed', 'error');
-        }
-    } catch (error) {
-        console.error('Delete error:', error);
-        showAlert('Error deleting registration', 'error');
-    }
+// Escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
