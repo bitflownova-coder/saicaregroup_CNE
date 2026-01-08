@@ -566,12 +566,55 @@ async function loadRegistrationCount(workshopId = null) {
                 formCard.style.display = 'none';
             }
             
-            // Show message in workshop details
+            // Show message with upcoming workshops in workshop details
             const workshopDetails = document.getElementById('workshopDetails');
             if (workshopDetails) {
+                // Get upcoming workshops (filter out current one)
+                const upcomingWorkshops = allWorkshops.filter(w => 
+                    w._id !== (currentWorkshop?._id) && 
+                    w.status === 'active' && 
+                    new Date(w.date) > new Date()
+                );
+                
+                let upcomingHTML = '';
+                if (upcomingWorkshops.length > 0) {
+                    upcomingHTML = `
+                        <div style="margin-top: 20px; padding: 16px; background: #e8f5e9; border-radius: 8px;">
+                            <h3 style="color: #2e7d32; font-size: 1rem; margin-bottom: 12px;">📅 Upcoming Workshops Available:</h3>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                ${upcomingWorkshops.slice(0, 3).map(w => {
+                                    const workshopDate = new Date(w.date).toLocaleDateString('en-IN', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric'
+                                    });
+                                    return `<li style="margin: 8px 0; padding: 8px; background: white; border-radius: 4px; cursor: pointer;" onclick="selectWorkshop('${w._id}')">
+                                        <strong>${escapeHtml(w.title)}</strong><br>
+                                        <small style="color: #666;">📍 ${escapeHtml(w.venue)} | 📅 ${workshopDate}</small>
+                                    </li>`;
+                                }).join('')}
+                            </ul>
+                            <p style="margin-top: 12px; font-size: 0.9rem; color: #555;">
+                                Click on a workshop above to register or <a href="https://www.saicaregroupofinstitutes.com" target="_blank" style="color: #1976d2; font-weight: 600;">visit our website</a> for more information.
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    upcomingHTML = `
+                        <div style="margin-top: 20px; padding: 16px; background: #fff3e0; border-radius: 8px;">
+                            <p style="color: #e65100; margin: 0; font-size: 0.95rem;">
+                                🔔 No upcoming workshops currently available. Please <a href="https://www.saicaregroupofinstitutes.com" target="_blank" style="color: #1976d2; font-weight: 600;">visit our website</a> for updates and future workshop announcements.
+                            </p>
+                        </div>
+                    `;
+                }
+                
                 const messageDiv = document.createElement('div');
                 messageDiv.style.cssText = 'background: #fee; border: 2px solid #dc3545; padding: 16px; border-radius: 8px; margin-top: 20px; text-align: center;';
-                messageDiv.innerHTML = `<strong style="color: #dc3545; font-size: 1.1rem;">❌ Registration Closed - All ${maxSeats} Seats Filled</strong>`;
+                messageDiv.innerHTML = `
+                    <strong style="color: #dc3545; font-size: 1.1rem;">❌ Registration Closed - All ${maxSeats} Seats Filled</strong>
+                    ${upcomingHTML}
+                `;
                 workshopDetails.appendChild(messageDiv);
             }
         }
@@ -584,10 +627,52 @@ async function loadRegistrationCount(workshopId = null) {
 function showClosedMessage() {
     const formCard = document.getElementById('formCard');
     formCard.className = 'form-card closed';
+    
+    // Get upcoming workshops
+    const upcomingWorkshops = allWorkshops.filter(w => 
+        w.status === 'active' && 
+        new Date(w.date) > new Date()
+    );
+    
+    let upcomingHTML = '';
+    if (upcomingWorkshops.length > 0) {
+        upcomingHTML = `
+            <div style="margin-top: 30px; padding: 20px; background: #e8f5e9; border-radius: 8px; text-align: left;">
+                <h3 style="color: #2e7d32; font-size: 1.1rem; margin-bottom: 16px; text-align: center;">📅 Look for Upcoming Workshops:</h3>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    ${upcomingWorkshops.slice(0, 3).map(w => {
+                        const workshopDate = new Date(w.date).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                        });
+                        return `<li style="margin: 10px 0; padding: 12px; background: white; border-radius: 6px; cursor: pointer; border-left: 4px solid #2e7d32;" onclick="selectWorkshop('${w._id}')">
+                            <strong style="color: #1976d2;">${escapeHtml(w.title)}</strong><br>
+                            <small style="color: #666;">📍 ${escapeHtml(w.venue)} | 📅 ${workshopDate} | ${w.seatsRemaining} seats left</small>
+                        </li>`;
+                    }).join('')}
+                </ul>
+                <p style="margin-top: 16px; text-align: center; font-size: 0.95rem; color: #555;">
+                    Click on a workshop above to register or <a href="https://www.saicaregroupofinstitutes.com" target="_blank" style="color: #1976d2; font-weight: 600; text-decoration: none;">visit our website →</a>
+                </p>
+            </div>
+        `;
+    } else {
+        upcomingHTML = `
+            <div style="margin-top: 30px; padding: 20px; background: #fff3e0; border-radius: 8px;">
+                <p style="color: #e65100; margin: 0; font-size: 1rem; text-align: center;">
+                    🔔 No upcoming workshops currently available.<br>
+                    Please <a href="https://www.saicaregroupofinstitutes.com" target="_blank" style="color: #1976d2; font-weight: 600; text-decoration: none;">visit our website →</a> for updates.
+                </p>
+            </div>
+        `;
+    }
+    
     formCard.innerHTML = `
         <h2>❌ Registration Closed</h2>
-        <p>We're sorry, but all ${registrationCount.maxRegistrations} seats have been filled.</p>
+        <p>We're sorry, but all ${registrationCount?.maxRegistrations || 'available'} seats have been filled.</p>
         <p>Thank you for your interest!</p>
+        ${upcomingHTML}
         <div style="margin-top: 30px;">
             <a href="/view-registration" class="btn btn-primary">View Your Registration</a>
         </div>
