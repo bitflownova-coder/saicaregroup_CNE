@@ -197,7 +197,9 @@ function displayRegistrations(registrations) {
 function viewPayment(screenshotPath) {
     const modal = document.getElementById('paymentModal');
     const img = document.getElementById('paymentImage');
-    img.src = '/' + screenshotPath;
+    // If path doesn't start with uploads/, add it
+    const fullPath = screenshotPath.startsWith('uploads/') ? screenshotPath : `uploads/payments/${screenshotPath}`;
+    img.src = '/' + fullPath;
     modal.style.display = 'block';
 }
 

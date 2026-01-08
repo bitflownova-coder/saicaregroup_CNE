@@ -103,6 +103,10 @@ app.get('/admin-dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-dashboard.html'));
 });
 
+app.get('/admin-workshops', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin-workshops.html'));
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
