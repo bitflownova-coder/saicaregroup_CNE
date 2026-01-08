@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const Registration = require('../models/Registration');
+const Workshop = require('../models/Workshop');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -37,18 +38,44 @@ const upload = multer({
 // Get registration count and remaining slots
 router.get('/count', async (req, res) => {
   try {
-    const count = await Registration.getRegistrationCount();
-    const remaining = Math.max(0, 500 - count);
-    const isFull = await Registration.isRegistrationFull();
+    const { workshopId } = req.query;
     
-    res.json({
-      success: true,
-      total: count,
-      remaining: remaining,
-      isFull: isFull,
-      maxRegistrations: 500
-    });
+    if (workshopId) {
+      // Get count for specific workshop
+      const workshop = await Workshop.findById(workshopId);
+      if (!workshop) {
+        return res.status(404).json({
+          success: false,
+          message: 'Workshop not found'
+        });
+      }
+      
+      const count = await Registration.getRegistrationCount(workshopId);
+      const remaining = Math.max(0, workshop.maxSeats - count);
+      
+      res.json({
+        success: true,
+        total: count,
+        remaining: remaining,
+        isFull: count >= workshop.maxSeats,
+        maxRegistrations: workshop.maxSeats
+      });
+    } else {
+      // Get count for all registrations (legacy support)
+      const count = await Registration.getRegistrationCount();
+      const remaining = Math.max(0, 500 - count);
+      const isFull = await Registration.isRegistrationFull();
+      
+      res.json({
+        success: true,
+        total: count,
+        remaining: remaining,
+        isFull: isFull,
+        maxRegistrations: 500
+      });
+    }
   } catch (error) {
+    console.error('Error fetching registration count:', error);
     res.status(500).json({ success: false, message: 'Error fetching registration count' });
   }
 });
@@ -56,17 +83,42 @@ router.get('/count', async (req, res) => {
 // Submit new registration
 router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
   try {
-    // Check if registration is full
-    const isFull = await Registration.isRegistrationFull();
-    if (isFull) {
+    // Get workshopId from request body
+    const { workshopId } = req.body;
+    
+    if (!workshopId) {
       return res.status(400).json({
         success: false,
-        message: 'Registration closed. All 500 seats are filled.'
+        message: 'Workshop ID is required'
       });
     }
 
-    // Get next form number
-    const formNumber = await getNextFormNumber();
+    // Validate workshop exists
+    const workshop = await Workshop.findById(workshopId);
+    if (!workshop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Workshop not found'
+      });
+    }
+
+    // Check if workshop is active and accepting registrations
+    if (workshop.status !== 'active') {
+      return res.status(400).json({
+        success: false,
+        message: `Registration is not available. Workshop status: ${workshop.status}`
+      });
+    }
+
+    if (!workshop.canAcceptRegistrations()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registration closed. All seats are filled.'
+      });
+    }
+
+    // Get next form number for this workshop
+    const formNumber = await Registration.getNextFormNumber(workshopId);
 
     // Validate required fields
     const { fullName, mncUID, mncRegistrationNumber, mobileNumber, paymentUTR } = req.body;
@@ -85,12 +137,15 @@ router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
       });
     }
 
-    // Check if MNC UID already exists
-    const existingRegistration = await Registration.findOne({ mncUID: mncUID.trim() });
+    // Check if MNC UID already exists for this workshop
+    const existingRegistration = await Registration.findOne({ 
+      mncUID: mncUID.trim(),
+      workshopId: workshopId
+    });
     if (existingRegistration) {
       return res.status(400).json({
         success: false,
-        message: 'This MNC UID is already registered'
+        message: 'This MNC UID is already registered for this workshop'
       });
     }
 
@@ -99,6 +154,7 @@ router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
 
     // Create new registration
     const registration = new Registration({
+      workshopId: workshopId,
       formNumber: formNumber,
       fullName: fullName.trim(),
       mncUID: mncUID.trim(),
@@ -111,6 +167,9 @@ router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
 
     await registration.save();
 
+    // Increment workshop registration count (auto-marks as full if needed)
+    await workshop.incrementRegistrationCount();
+
     res.status(201).json({
       success: true,
       message: 'Registration submitted successfully',
@@ -118,7 +177,12 @@ router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
         formNumber: registration.formNumber,
         mncUID: registration.mncUID,
         fullName: registration.fullName,
-        submittedAt: registration.submittedAt
+        submittedAt: registration.submittedAt,
+        workshop: {
+          title: workshop.title,
+          date: workshop.date,
+          seatsRemaining: workshop.seatsRemaining - 1 // Reflect the new count
+        }
       }
     });
 
@@ -142,7 +206,7 @@ router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
 // View registration by MNC UID and Mobile Number
 router.post('/view', async (req, res) => {
   try {
-    const { mncUID, mobileNumber } = req.body;
+    const { mncUID, mobileNumber, workshopId } = req.body;
 
     if (!mncUID || !mobileNumber) {
       return res.status(400).json({
@@ -151,10 +215,17 @@ router.post('/view', async (req, res) => {
       });
     }
 
-    const registration = await Registration.findOne({
+    // Build query - optionally filter by workshop
+    const query = {
       mncUID: mncUID.trim(),
       mobileNumber: mobileNumber.trim()
-    });
+    };
+    
+    if (workshopId) {
+      query.workshopId = workshopId;
+    }
+
+    const registration = await Registration.findOne(query).populate('workshopId', 'title date venue');
 
     if (!registration) {
       return res.status(404).json({
@@ -175,11 +246,17 @@ router.post('/view', async (req, res) => {
         paymentScreenshot: registration.paymentScreenshot,
         submittedAt: registration.submittedAt,
         downloadCount: registration.downloadCount,
-        canDownload: registration.downloadCount < 2
+        canDownload: registration.downloadCount < 2,
+        workshop: registration.workshopId ? {
+          title: registration.workshopId.title,
+          date: registration.workshopId.date,
+          venue: registration.workshopId.venue
+        } : null
       }
     });
 
   } catch (error) {
+    console.error('Error retrieving registration:', error);
     res.status(500).json({
       success: false,
       message: 'Error retrieving registration'

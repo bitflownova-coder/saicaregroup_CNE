@@ -9,6 +9,8 @@ const rateLimit = require('express-rate-limit');
 
 const registrationRoutes = require('./routes/registration');
 const adminRoutes = require('./routes/admin');
+const workshopRoutes = require('./routes/workshop');
+const adminWorkshopRoutes = require('./routes/adminWorkshop');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,7 +68,8 @@ app.get('/favicon.ico', (req, res) => {
 
 // Serve static files BEFORE rate limiting
 app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads/payments', express.static('uploads/payments'));
+app.use('/uploads/qr-codes', express.static('uploads/qr-codes'));
 app.use('/assest', express.static('assest'));
 
 // Apply rate limiting only to API routes
@@ -80,6 +83,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/saicare_c
 // Routes
 app.use('/api/registration', registrationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/workshop', workshopRoutes);
+app.use('/api/admin/workshops', adminWorkshopRoutes);
 
 // Serve HTML pages
 app.get('/', (req, res) => {

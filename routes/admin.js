@@ -65,20 +65,32 @@ router.get('/check-session', (req, res) => {
 // Get all registrations (protected)
 router.get('/registrations', isAuthenticated, async (req, res) => {
   try {
-    const { search, page = 1, limit = 50 } = req.query;
+    const { search, page = 1, limit = 50, workshopId } = req.query;
     
     let query = {};
     
+    // Filter by workshop if specified
+    if (workshopId) {
+      query.workshopId = workshopId;
+    }
+    
     if (search) {
-      query = {
-        $or: [
-          { fullName: { $regex: search, $options: 'i' } },
-          { mncUID: { $regex: search, $options: 'i' } },
-          { mncRegistrationNumber: { $regex: search, $options: 'i' } },
-          { mobileNumber: { $regex: search, $options: 'i' } },
-          { paymentUTR: { $regex: search, $options: 'i' } }
-        ]
-      };
+      const searchConditions = [
+        { fullName: { $regex: search, $options: 'i' } },
+        { mncUID: { $regex: search, $options: 'i' } },
+        { mncRegistrationNumber: { $regex: search, $options: 'i' } },
+        { mobileNumber: { $regex: search, $options: 'i' } },
+        { paymentUTR: { $regex: search, $options: 'i' } }
+      ];
+      
+      if (workshopId) {
+        query.$and = [
+          { workshopId: workshopId },
+          { $or: searchConditions }
+        ];
+      } else {
+        query.$or = searchConditions;
+      }
     }
 
     const skip = (page - 1) * limit;
@@ -109,25 +121,80 @@ router.get('/registrations', isAuthenticated, async (req, res) => {
 // Get dashboard stats (protected)
 router.get('/stats', isAuthenticated, async (req, res) => {
   try {
-    const total = await Registration.getRegistrationCount();
-    const remaining = Math.max(0, 500 - total);
+    const { workshopId } = req.query;
     
-    // Get recent registrations (last 10)
-    const recent = await Registration.find()
-      .sort({ submittedAt: -1 })
-      .limit(10)
-      .select('fullName mncUID formNumber submittedAt');
-
-    res.json({
-      success: true,
-      stats: {
+    let stats = {};
+    
+    if (workshopId) {
+      // Get stats for specific workshop
+      const workshop = await Workshop.findById(workshopId);
+      if (!workshop) {
+        return res.status(404).json({ success: false, message: 'Workshop not found' });
+      }
+      
+      const total = await Registration.getRegistrationCount(workshopId);
+      const maxRegistrations = workshop.maxSeats;
+      const remaining = Math.max(0, maxRegistrations - total);
+      const percentageFilled = total > 0 ? ((total / maxRegistrations) * 100).toFixed(2) : '0.00';
+      
+      // Get recent registrations for this workshop
+      const recent = await Registration.find({ workshopId })
+        .sort({ submittedAt: -1 })
+        .limit(10)
+        .select('fullName mncUID formNumber submittedAt');
+      
+      stats = {
         total,
         remaining,
-        maxRegistrations: 500,
-        percentageFilled: ((total / 500) * 100).toFixed(2)
-      },
-      recentRegistrations: recent
-    });
+        percentageFilled,
+        maxRegistrations,
+        workshop: {
+          id: workshop._id,
+          title: workshop.title,
+          date: workshop.date,
+          fee: workshop.fee,
+          credits: workshop.credits,
+          venue: workshop.venue,
+          status: workshop.status
+        }
+      };
+      
+      res.json({
+        success: true,
+        stats,
+        recentRegistrations: recent
+      });
+    } else {
+      // Get aggregated stats for all workshops
+      const total = await Registration.getRegistrationCount();
+      const allWorkshops = await Workshop.find();
+      const totalMaxSeats = allWorkshops.reduce((sum, w) => sum + w.maxSeats, 0);
+      const remaining = Math.max(0, totalMaxSeats - total);
+      const percentageFilled = total > 0 && totalMaxSeats > 0 
+        ? ((total / totalMaxSeats) * 100).toFixed(2)
+        : '0.00';
+      
+      // Get recent registrations across all workshops
+      const recent = await Registration.find()
+        .sort({ submittedAt: -1 })
+        .limit(10)
+        .select('fullName mncUID formNumber submittedAt workshopId')
+        .populate('workshopId', 'title');
+      
+      stats = {
+        total,
+        remaining,
+        maxRegistrations: totalMaxSeats,
+        percentageFilled,
+        workshopCount: allWorkshops.length
+      };
+      
+      res.json({
+        success: true,
+        stats,
+        recentRegistrations: recent
+      });
+    }
 
   } catch (error) {
     res.status(500).json({
@@ -206,6 +273,9 @@ router.delete('/registrations/:id', isAuthenticated, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Registration not found' });
     }
 
+    // Store workshopId before deletion
+    const workshopId = record.workshopId;
+
     // Delete associated payment screenshot if exists
     if (record.paymentScreenshot) {
       const filePath = path.join(__dirname, '..', 'uploads', 'payments', record.paymentScreenshot);
@@ -216,8 +286,20 @@ router.delete('/registrations/:id', isAuthenticated, async (req, res) => {
 
     await record.deleteOne();
 
+    // Decrement workshop registration count
+    if (workshopId) {
+      const Workshop = require('../models/Workshop');
+      const workshop = await Workshop.findById(workshopId);
+      if (workshop && workshop.currentRegistrations > 0) {
+        workshop.currentRegistrations -= 1;
+        await workshop.save();
+        console.log(`Decremented registration count for workshop ${workshopId} to ${workshop.currentRegistrations}`);
+      }
+    }
+
     res.json({ success: true, message: 'Registration deleted successfully' });
   } catch (error) {
+    console.error('Error deleting registration:', error);
     res.status(500).json({ success: false, message: 'Error deleting registration' });
   }
 });

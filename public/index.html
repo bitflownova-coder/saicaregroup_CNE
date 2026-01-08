@@ -14,19 +14,12 @@
         <div class="header">
             <h1>SAI CARE GROUP OF INSTITUTES</h1>
             <h2>CNE Registration 2026</h2>
-            <div class="counter" id="registrationCounter">
-                Loading...
-            </div>
             
             <div class="nav-links" style="margin-top: 16px;">
                 <a href="/view-registration" class="nav-btn">View My Registration</a>
             </div>
             
             <div style="display: flex; justify-content: center; gap: 16px; margin-top: 20px; flex-wrap: wrap;">
-                <div style="background: rgba(255,255,255,0.95); padding: 10px 18px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 8px;">
-                    <span style="font-weight: 600; color: var(--primary-color); font-size: 0.9rem;">Seats:</span> 
-                    <span id="seatValueTop" style="font-weight: 700; color: var(--text-dark); font-size: 0.95rem;">Loading...</span>
-                </div>
                 <div style="background: rgba(255,255,255,0.95); padding: 10px 18px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 8px;">
                     <span style="font-weight: 600; color: var(--primary-color); font-size: 0.9rem;">Payment:</span> 
                     <span style="font-weight: 700; color: var(--text-dark); font-size: 0.95rem;">PhonePe QR</span>
@@ -38,51 +31,27 @@
             </div>
 
             <div class="hero-grid" style="grid-template-columns: 1fr;">
-                <div class="stat-card" style="text-align: left; padding: 24px;">
-                    <h3 style="color: var(--primary-color); margin-bottom: 16px; font-size: 1.3rem;">Details Of CNE Workshop</h3>
-                    
-                    <div style="margin-bottom: 14px;">
-                        <strong style="color: var(--text-dark); font-size: 1rem;">CNE Topic:</strong>
-                        <span style="color: var(--text-dark); font-size: 1rem; margin-left: 8px;">NATIONAL HEALTH PROGRAMMES</span>
-                    </div>
-                    
-                    <div style="margin-bottom: 14px;">
-                        <strong style="color: var(--text-dark); font-size: 1rem;">CNE Date:</strong>
-                        <span style="color: var(--text-dark); font-size: 1rem; margin-left: 8px;">04/01/2026 (SUNDAY)</span>
-                    </div>
-                    
-                    <div style="margin-bottom: 16px;">
-                        <strong style="color: var(--text-dark); font-size: 1rem;">CNE VENUE (Address):</strong>
-                        <a href="https://share.google/6RTz3qtkGG1O2WzOj" target="_blank" style="color: var(--primary-color); font-size: 0.95rem; margin-left: 8px; display: block; margin-top: 6px; line-height: 1.6; text-decoration: underline;">
-                            SAI CARE COLLEGE OF NURSING NASHIK, SERVEY NO 134, NEAR KISHOR SURYAWANSHI SCHOOL, BEHIND MUHS UNIVERSITY, DINDORI ROAD, MANORI, NASHIK. PIN- 422004
-                        </a>
-                    </div>
-                    
-                    <div style="margin-bottom: 16px;">
-                        <strong style="color: var(--text-dark); font-size: 1rem;">Workshop Fee:</strong>
-                        <span style="color: var(--text-dark); font-size: 1rem; margin-left: 8px; font-weight: 600;">₹ 500/-</span>
-                    </div>
-                    
-                    <div style="margin-bottom: 16px;">
-                        <strong style="color: var(--text-dark); font-size: 1rem;">CNE Credits:</strong>
-                        <span style="color: var(--text-dark); font-size: 1rem; margin-left: 8px; font-weight: 600;">10 Credits</span>
-                    </div>
-                    
-                    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 6px; margin-top: 16px;">
-                        <strong style="color: #92400e; font-size: 0.95rem;">Important Note:</strong>
-                        <p style="color: #92400e; font-size: 0.9rem; margin: 6px 0 0 0; line-height: 1.5;">
-                            Attendance is compulsory on the day of workshop. Management will not be responsible for loss of Candidates Due to Incomplete or wrong details (UID & MNC Reg. No.). Amount once Paid will not be Refundable.
-                        </p>
+                <!-- Available Workshops Section -->
+                <div id="workshopsContainer" style="margin-bottom: 20px;">
+                    <div style="text-align: center; padding: 40px;">
+                        <div class="spinner show"></div>
+                        <p style="color: #666; margin-top: 15px;">Loading workshops...</p>
                     </div>
                 </div>
+
+                <!-- Selected Workshop Details (Hidden - replaced with compact summary) -->
+                <div class="stat-card" style="display: none;" id="workshopDetails"></div>
             </div>
         </div>
+
+        <!-- Compact Workshop Summary (shown when workshop selected) -->
+        <div id="workshopSummary" style="display: none; margin: 30px 0;"></div>
 
         <!-- Alert Messages -->
         <div id="alertMessage" class="alert"></div>
 
         <!-- Experience Section -->
-        <div class="glow-card">
+        <div class="glow-card" id="experienceSection">
             <div class="pill">⚡ Quick 3-step registration</div>
             <h3 class="section-title">Register, Pay, Confirm — in minutes</h3>
             <p class="section-sub">Follow the steps below to secure your seat. You will receive a Form Number (1-500) and must print the form for workshop entry.</p>
@@ -112,8 +81,8 @@
         </div>
 
         <!-- Registration Form -->
-        <div class="form-card" id="formCard">
-            <h3 class="section-title">Register for CNE Workshop</h3>
+        <div class="form-card" id="formCard" style="display: none;">
+            <h3 class="section-title" id="formTitle">Register for CNE Workshop</h3>
             <form id="registrationForm">
                 <div class="form-group">
                     <label for="fullName">Full Name *</label>

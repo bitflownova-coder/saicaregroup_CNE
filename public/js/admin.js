@@ -2,6 +2,7 @@
 let allRegistrations = [];
 let currentPage = 1;
 let searchTerm = '';
+let selectedWorkshopId = '';
 
 // Check authentication on load
 document.addEventListener('DOMContentLoaded', () => {
@@ -22,6 +23,7 @@ async function checkAuth() {
         
         // Load dashboard data
         loadStats();
+        loadWorkshops();
         loadRegistrations();
     } catch (error) {
         console.error('Auth check error:', error);
@@ -34,11 +36,21 @@ function setupEventListeners() {
     const logoutBtn = document.getElementById('logoutBtn');
     const downloadExcelBtn = document.getElementById('downloadExcelBtn');
     const searchBox = document.getElementById('searchBox');
+    const workshopFilter = document.getElementById('workshopFilter');
     const closeModalBtn = document.getElementById('closeModalBtn');
 
     logoutBtn.addEventListener('click', handleLogout);
     downloadExcelBtn.addEventListener('click', downloadExcel);
     closeModalBtn.addEventListener('click', closeModal);
+
+    // Workshop filter - update both stats and registrations
+    workshopFilter.addEventListener('change', (e) => {
+        selectedWorkshopId = e.target.value;
+        currentPage = 1;
+        loadStats(selectedWorkshopId); // Update stats for selected workshop
+        loadRegistrations();
+        loadWorkshopDetails(selectedWorkshopId); // Load workshop details
+    });
 
     // Search with debounce
     let searchTimeout;
@@ -52,10 +64,50 @@ function setupEventListeners() {
     });
 }
 
-// Load dashboard stats
-async function loadStats() {
+// Load workshops for filter dropdown
+async function loadWorkshops() {
     try {
-        const response = await fetch('/api/admin/stats');
+        const response = await fetch('/api/admin/workshops');
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            const workshopFilter = document.getElementById('workshopFilter');
+            const workshops = result.data.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            workshops.forEach(workshop => {
+                const option = document.createElement('option');
+                option.value = workshop._id;
+                const date = new Date(workshop.date).toLocaleDateString('en-IN', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                option.textContent = `${workshop.title} - ${date} (${workshop.status})`;
+                workshopFilter.appendChild(option);
+            });
+
+            // Check if specific workshop is requested in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const workshopId = urlParams.get('workshopId');
+            if (workshopId) {
+                workshopFilter.value = workshopId;
+                selectedWorkshopId = workshopId;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading workshops:', error);
+    }
+}
+
+// Load dashboard stats
+async function loadStats(workshopId = '') {
+    try {
+        let url = '/api/admin/stats';
+        if (workshopId) {
+            url += `?workshopId=${workshopId}`;
+        }
+        
+        const response = await fetch(url);
         const data = await response.json();
         
         if (data.success) {
@@ -68,10 +120,57 @@ async function loadStats() {
     }
 }
 
+// Load workshop details into dashboard header
+async function loadWorkshopDetails(workshopId) {
+    const workshopInfo = document.getElementById('workshopInfo');
+    
+    if (!workshopId) {
+        // Show "All Workshops" view
+        workshopInfo.innerHTML = `
+            <h1 class="workshop-title">All Workshops</h1>
+            <div class="workshop-meta">
+                <span><i class="fas fa-calendar-alt"></i> View All</span>
+            </div>
+        `;
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/stats?workshopId=${workshopId}`);
+        const data = await response.json();
+        
+        if (data.success && data.stats.workshop) {
+            const workshop = data.stats.workshop;
+            const date = new Date(workshop.date).toLocaleDateString('en-IN', { 
+                day: '2-digit',
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+            
+            workshopInfo.innerHTML = `
+                <h1 class="workshop-title">${workshop.title}</h1>
+                <div class="workshop-meta">
+                    <span><i class="fas fa-calendar-alt"></i> ${date}</span>
+                    <span><i class="fas fa-rupee-sign"></i> ${workshop.fee}/-</span>
+                    <span><i class="fas fa-award"></i> ${workshop.credits} CME Credits</span>
+                    <span><i class="fas fa-map-marker-alt"></i> ${workshop.venue}</span>
+                    <span class="status-badge status-${workshop.status.toLowerCase()}">${workshop.status}</span>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading workshop details:', error);
+    }
+}
+
 // Load registrations
 async function loadRegistrations() {
     try {
-        const url = `/api/admin/registrations?page=${currentPage}&limit=50&search=${searchTerm}`;
+        let url = `/api/admin/registrations?page=${currentPage}&limit=50&search=${searchTerm}`;
+        if (selectedWorkshopId) {
+            url += `&workshopId=${selectedWorkshopId}`;
+        }
+        
         const response = await fetch(url);
         const data = await response.json();
         
