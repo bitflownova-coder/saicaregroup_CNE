@@ -101,22 +101,27 @@ async function loadWorkshops() {
 
 // Load dashboard stats
 async function loadStats(workshopId = '') {
+    const statsSection = document.getElementById('statsSection');
+    
+    // Only show stats if a specific workshop is selected
+    if (!workshopId) {
+        statsSection.style.display = 'none';
+        return;
+    }
+    
     try {
-        let url = '/api/admin/stats';
-        if (workshopId) {
-            url += `?workshopId=${workshopId}`;
-        }
-        
-        const response = await fetch(url);
+        const response = await fetch(`/api/admin/stats?workshopId=${workshopId}`);
         const data = await response.json();
         
         if (data.success) {
             document.getElementById('totalCount').textContent = data.stats.total;
             document.getElementById('remainingCount').textContent = data.stats.remaining;
             document.getElementById('percentageFilled').textContent = data.stats.percentageFilled + '%';
+            statsSection.style.display = 'grid';
         }
     } catch (error) {
         console.error('Error loading stats:', error);
+        statsSection.style.display = 'none';
     }
 }
 
