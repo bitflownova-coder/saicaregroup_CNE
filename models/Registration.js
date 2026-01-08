@@ -10,9 +10,7 @@ const registrationSchema = new mongoose.Schema({
   formNumber: {
     type: Number,
     required: true,
-    unique: true,
-    min: 1,
-    max: 500
+    min: 1
   },
   mncUID: {
     type: String,
@@ -71,7 +69,7 @@ const registrationSchema = new mongoose.Schema({
 
 // Index for faster lookups
 registrationSchema.index({ mncUID: 1, mobileNumber: 1 });
-registrationSchema.index({ workshopId: 1, formNumber: 1 });
+registrationSchema.index({ workshopId: 1, formNumber: 1 }, { unique: true }); // Unique form number per workshop
 registrationSchema.index({ workshopId: 1, submittedAt: -1 });
 
 // Virtual for checking download availability
