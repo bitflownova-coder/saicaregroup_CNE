@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Registration = require('../models/Registration');
+const Workshop = require('../models/Workshop');
 const { isAuthenticated, verifyAdminCredentials } = require('../middleware/auth');
 const XLSX = require('xlsx');
 const fs = require('fs');
