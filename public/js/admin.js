@@ -195,7 +195,16 @@ function displayRegistrations(registrations) {
 
 // View payment screenshot
 function viewPayment(screenshotPath) {
-    window.open('/' + screenshotPath, '_blank');
+    const modal = document.getElementById('paymentModal');
+    const img = document.getElementById('paymentImage');
+    img.src = '/' + screenshotPath;
+    modal.style.display = 'block';
+}
+
+// Close payment modal
+function closePaymentModal() {
+    const modal = document.getElementById('paymentModal');
+    modal.style.display = 'none';
 }
 
 // Delete registration
