@@ -1,405 +1,289 @@
-# 🚀 Deployment Guide
+# 🚀 Deployment Guide - CNE Registration System
 
-## Production Deployment Options
+## Current Production Setup
 
-### Option 1: Heroku (Recommended for Beginners)
-
-#### Prerequisites:
-- Heroku account (free)
-- Heroku CLI installed
-
-#### Steps:
-
-1. **Install Heroku CLI**
-   ```powershell
-   # Download from: https://devcenter.heroku.com/articles/heroku-cli
-   ```
-
-2. **Login to Heroku**
-   ```powershell
-   heroku login
-   ```
-
-3. **Create Heroku App**
-   ```powershell
-   cd 'd:\Bitflow_softwares\LMS\Sai_care_group\CNE'
-   heroku create sai-care-cne-registration
-   ```
-
-4. **Add MongoDB Atlas** (Free Cloud Database)
-   - Go to: https://www.mongodb.com/cloud/atlas
-   - Create free cluster
-   - Get connection string
-   - Add to Heroku config:
-   ```powershell
-   heroku config:set MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/saicare_cne"
-   heroku config:set SESSION_SECRET="YourProductionSecretKey123!@#"
-   heroku config:set NODE_ENV="production"
-   ```
-
-5. **Deploy**
-   ```powershell
-   git init
-   git add .
-   git commit -m "Initial deployment"
-   git push heroku main
-   ```
-
-6. **Open App**
-   ```powershell
-   heroku open
-   ```
+**Live Website:** https://www.saicaregroupofinstitutes.com  
+**Server:** AWS EC2 (eu-north-1 - Stockholm)  
+**Instance ID:** i-01fbe111dacd87669  
+**Public IP:** 16.171.10.93  
+**OS:** Ubuntu (Amazon Linux)  
+**Web Server:** Nginx with SSL (Let's Encrypt)  
+**Process Manager:** PM2  
+**Database:** MongoDB (connected)
 
 ---
 
-### Option 2: Vercel + Railway
+## 📋 Prerequisites
 
-#### Frontend (Vercel):
-1. Push code to GitHub
-2. Import to Vercel
-3. Configure build settings
-
-#### Backend (Railway):
-1. Go to: https://railway.app
-2. New Project → Deploy from GitHub
-3. Add MongoDB plugin
-4. Set environment variables
-5. Deploy
+- **SSH Key:** `cne-2026-key.pem` (keep in safe location!)
+- **GitHub:** https://github.com/bitflownova-coder/saicaregroup_CNE
+- **AWS Account:** Access to EC2 console
+- **Security Group:** Port 22 allowed from your IP (currently: 103.197.75.84/32)
 
 ---
 
-### Option 3: DigitalOcean / AWS EC2
+## 🔄 Standard Deployment Process
 
-#### Prerequisites:
-- VPS with Ubuntu
-- SSH access
-- Domain name (optional)
+### Step 1: Make Changes Locally
 
-#### Setup Steps:
-
-1. **Connect to Server**
-   ```bash
-   ssh root@your-server-ip
-   ```
-
-2. **Install Node.js**
-   ```bash
-   curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-   sudo apt-get install -y nodejs
-   ```
-
-3. **Install MongoDB**
-   ```bash
-   wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
-   echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-   sudo apt-get update
-   sudo apt-get install -y mongodb-org
-   sudo systemctl start mongod
-   sudo systemctl enable mongod
-   ```
-
-4. **Upload Project**
-   ```bash
-   # On your local machine
-   scp -r . root@your-server-ip:/var/www/cne-registration
-   ```
-
-5. **Install Dependencies**
-   ```bash
-   cd /var/www/cne-registration
-   npm install --production
-   ```
-
-6. **Setup PM2 (Process Manager)**
-   ```bash
-   sudo npm install -g pm2
-   pm2 start server.js --name cne-registration
-   pm2 save
-   pm2 startup
-   ```
-
-7. **Setup Nginx (Reverse Proxy)**
-   ```bash
-   sudo apt-get install nginx
-   sudo nano /etc/nginx/sites-available/cne-registration
-   ```
-
-   Add:
-   ```nginx
-   server {
-       listen 80;
-       server_name your-domain.com;
-
-       location / {
-           proxy_pass http://localhost:3000;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection 'upgrade';
-           proxy_set_header Host $host;
-           proxy_cache_bypass $http_upgrade;
-       }
-   }
-   ```
-
-   ```bash
-   sudo ln -s /etc/nginx/sites-available/cne-registration /etc/nginx/sites-enabled/
-   sudo nginx -t
-   sudo systemctl restart nginx
-   ```
-
-8. **Setup SSL (Let's Encrypt)**
-   ```bash
-   sudo apt-get install certbot python3-certbot-nginx
-   sudo certbot --nginx -d your-domain.com
-   ```
-
----
-
-## 🔧 Production Configuration
-
-### Update .env for Production:
-
-```env
-PORT=3000
-NODE_ENV=production
-
-# MongoDB Cloud (MongoDB Atlas)
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/saicare_cne
-
-# Strong Session Secret (Generate random)
-SESSION_SECRET=Use-A-Very-Strong-Random-Secret-Here-Min-32-Chars
-
-# Admin Credentials (Change if needed)
-ADMIN_USERNAME=saicaregroupofinstitues
-ADMIN_PASSWORD=bHAGIRATH@2025?.
-
-# Registration Limits
-MAX_REGISTRATIONS=500
-MAX_DOWNLOADS_PER_USER=2
-
-# File Upload
-MAX_FILE_SIZE=5242880
-UPLOAD_PATH=./uploads/payments
-```
-
-### Generate Strong Session Secret:
 ```powershell
-# Using Node.js
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# Navigate to project directory
+cd "c:\Bitflow Software\CNE\saicaregroup_CNE"
+
+# Make your code changes using VS Code or any editor
+# Test locally if needed (requires MongoDB)
+```
+
+### Step 2: Commit and Push to GitHub
+
+```powershell
+# Add all changes
+git add -A
+
+# Commit with descriptive message
+git commit -m "Description of changes"
+
+# Push to main branch
+git push origin main
+```
+
+### Step 3: Deploy to EC2 Server
+
+```powershell
+# SSH into server, pull latest code, and restart
+ssh -i "c:\Bitflow Software\CNE\cne-2026-key.pem" -o StrictHostKeyChecking=no ubuntu@16.171.10.93 "cd ~/cne-app && git pull origin main && pm2 restart all"
+```
+
+**That's it!** Your changes are now live at https://www.saicaregroupofinstitutes.com
+
+---
+
+## 🛠️ Common Management Tasks
+
+### View Application Logs
+```powershell
+ssh -i "c:\Bitflow Software\CNE\cne-2026-key.pem" ubuntu@16.171.10.93 "pm2 logs --lines 50"
+```
+
+### Check Application Status
+```powershell
+ssh -i "c:\Bitflow Software\CNE\cne-2026-key.pem" ubuntu@16.171.10.93 "pm2 status"
+```
+
+### Restart Application
+```powershell
+ssh -i "c:\Bitflow Software\CNE\cne-2026-key.pem" ubuntu@16.171.10.93 "pm2 restart all"
+```
+
+### View Nginx Configuration
+```powershell
+ssh -i "c:\Bitflow Software\CNE\cne-2026-key.pem" ubuntu@16.171.10.93 "sudo cat /etc/nginx/sites-enabled/*"
+```
+
+### Check Nginx Status
+```powershell
+ssh -i "c:\Bitflow Software\CNE\cne-2026-key.pem" ubuntu@16.171.10.93 "sudo systemctl status nginx"
 ```
 
 ---
 
-## 🔐 Security Checklist for Production
+## 🔐 Security Configuration
 
-- [ ] Change SESSION_SECRET to random strong value
-- [ ] Enable HTTPS/SSL
-- [ ] Update MongoDB credentials
-- [ ] Set NODE_ENV=production
-- [ ] Configure firewall rules
-- [ ] Setup automated backups
-- [ ] Enable MongoDB authentication
-- [ ] Add monitoring (e.g., PM2, New Relic)
-- [ ] Setup error logging (e.g., Sentry)
-- [ ] Configure CORS properly
-- [ ] Add helmet.js for security headers
-- [ ] Setup rate limiting per route
-- [ ] Regular security updates
+### EC2 Security Group Rules
 
----
+**Inbound Rules:**
+- **SSH (22):** 103.197.75.84/32 (your IP - update if changed)
+- **HTTP (80):** 0.0.0.0/0 (redirects to HTTPS)
+- **HTTPS (443):** 0.0.0.0/0 (public access)
 
-## 📊 MongoDB Atlas Setup (Free Cloud Database)
+### Update Your IP in Security Group
 
-1. **Create Account**
-   - Go to: https://www.mongodb.com/cloud/atlas
-   - Sign up for free
-
-2. **Create Cluster**
-   - Choose Free Tier (M0)
-   - Select region closest to your users
-   - Create cluster (takes 3-5 minutes)
-
-3. **Create Database User**
-   - Database Access → Add New User
-   - Choose password authentication
-   - Set username and strong password
-
-4. **Configure Network Access**
-   - Network Access → Add IP Address
-   - Choose "Allow Access from Anywhere" (0.0.0.0/0)
-   - Or add specific IPs
-
-5. **Get Connection String**
-   - Clusters → Connect → Connect Your Application
-   - Copy connection string
-   - Replace `<password>` with your password
-   - Add to .env as MONGODB_URI
+If your IP changes, update the security group:
+1. AWS Console → EC2 → Security Groups
+2. Find the security group for instance i-01fbe111dacd87669
+3. Edit inbound rules → SSH rule
+4. Update source IP to your new IP/32
 
 ---
 
-## 🔄 Continuous Deployment (GitHub Actions)
+## 📂 Server Directory Structure
 
-Create `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v2
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '18'
-    
-    - name: Install dependencies
-      run: npm install
-    
-    - name: Deploy to Heroku
-      uses: akhileshns/heroku-deploy@v3.12.12
-      with:
-        heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-        heroku_app_name: "sai-care-cne-registration"
-        heroku_email: "your-email@example.com"
+```
+/home/ubuntu/cne-app/          # Application root
+├── public/                    # Static files (HTML, CSS, JS)
+├── routes/                    # API routes
+├── models/                    # Database models
+├── middleware/                # Custom middleware
+├── uploads/                   # Uploaded files (payment screenshots, QR codes)
+├── server.js                  # Main application file
+├── package.json              # Dependencies
+└── .env                      # Environment variables (DO NOT COMMIT)
 ```
 
 ---
 
-## 📱 Domain Configuration
+## 🌐 SSL Certificate (Let's Encrypt)
 
-### Update Admin Email (Optional):
+**Certificate Status:** Active (auto-renews)  
+**Domain:** www.saicaregroupofinstitutes.com  
+**Certificate Path:** `/etc/letsencrypt/live/www.saicaregroupofinstitutes.com/`
 
-Add email notification feature:
-```javascript
-// Install nodemailer
-npm install nodemailer
-
-// In server.js
-const nodemailer = require('nodemailer');
-
-// Configure email
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'your-email@gmail.com',
-    pass: 'your-app-password'
-  }
-});
-
-// Send notification on registration
-transporter.sendMail({
-  from: 'noreply@saicaregroup.com',
-  to: 'admin@saicaregroup.com',
-  subject: 'New CNE Registration',
-  text: `New registration from ${fullName}`
-});
-```
-
----
-
-## 🎯 Post-Deployment Testing
-
-1. **Test Registration Form**
-   - Submit new registration
-   - Verify in database
-
-2. **Test View Page**
-   - Lookup existing registration
-   - Download PDF
-
-3. **Test Admin Panel**
-   - Login
-   - View dashboard
-   - Download Excel
-
-4. **Test on Mobile**
-   - Open on phone
-   - Test all features
-
-5. **Load Testing**
-   - Use tools like Apache Bench or Artillery
-   - Test with multiple concurrent users
-
----
-
-## 📈 Monitoring Setup
-
-### Using PM2 Dashboard:
+SSL certificates auto-renew via certbot. To manually renew:
 ```bash
-pm2 plus
-# Follow instructions to setup monitoring
-```
-
-### Using Uptime Robot (Free):
-- Go to: https://uptimerobot.com
-- Add HTTP monitor
-- Get alerts if site goes down
-
----
-
-## 💾 Backup Strategy
-
-### Database Backups:
-```bash
-# Manual backup
-mongodump --uri="mongodb+srv://..." --out=/backups/$(date +%Y%m%d)
-
-# Setup cron job for automated backups
-crontab -e
-# Add: 0 2 * * * mongodump --uri="..." --out=/backups/$(date +%Y%m%d)
-```
-
-### File Backups:
-```bash
-# Backup uploads folder
-tar -czf uploads-backup-$(date +%Y%m%d).tar.gz uploads/
+ssh -i "cne-2026-key.pem" ubuntu@16.171.10.93 "sudo certbot renew"
 ```
 
 ---
 
-## 🆘 Troubleshooting Production Issues
+## 🗄️ Database (MongoDB)
 
-### Check Logs:
+**Type:** MongoDB  
+**Status:** Connected  
+**Connection:** Configured in server's `.env` file
+
+To view environment variables (contains sensitive data):
 ```bash
-# PM2 logs
-pm2 logs cne-registration
-
-# Nginx logs
-sudo tail -f /var/log/nginx/error.log
-```
-
-### Restart Services:
-```bash
-# Restart app
-pm2 restart cne-registration
-
-# Restart Nginx
-sudo systemctl restart nginx
-
-# Restart MongoDB
-sudo systemctl restart mongod
+ssh -i "cne-2026-key.pem" ubuntu@16.171.10.93 "cat ~/cne-app/.env"
 ```
 
 ---
 
-## 📞 Support & Maintenance
+## 🆘 Troubleshooting
 
-### Regular Tasks:
-- Weekly: Check logs for errors
-- Monthly: Update dependencies
-- Quarterly: Security audit
-- Annually: Review and optimize
+### Website Not Loading
+
+1. **Check if application is running:**
+   ```powershell
+   ssh -i "cne-2026-key.pem" ubuntu@16.171.10.93 "pm2 status"
+   ```
+
+2. **Check recent logs for errors:**
+   ```powershell
+   ssh -i "cne-2026-key.pem" ubuntu@16.171.10.93 "pm2 logs --lines 100"
+   ```
+
+3. **Restart application:**
+   ```powershell
+   ssh -i "cne-2026-key.pem" ubuntu@16.171.10.93 "pm2 restart all"
+   ```
+
+### SSH Connection Timeout
+
+- **Check your current IP:** Run `(Invoke-WebRequest -Uri "https://api.ipify.org" -UseBasicParsing).Content`
+- **Update Security Group:** Add your new IP to EC2 security group (SSH port 22)
+- **Verify instance is running:** Check AWS EC2 console
+
+### Code Changes Not Reflecting
+
+1. **Verify push to GitHub:**
+   ```powershell
+   git log --oneline -5  # Check recent commits
+   ```
+
+2. **Pull changes on server:**
+   ```powershell
+   ssh -i "cne-2026-key.pem" ubuntu@16.171.10.93 "cd ~/cne-app && git pull origin main"
+   ```
+
+3. **Hard refresh browser:** Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
+
+### PM2 Not Running
+
+```bash
+# SSH into server
+ssh -i "cne-2026-key.pem" ubuntu@16.171.10.93
+
+# Start the application
+cd ~/cne-app
+pm2 start server.js --name cne-app
+pm2 save
+```
 
 ---
 
-**🚀 Your application is ready for production deployment!**
+## 📊 Monitoring & Maintenance
 
-Choose the deployment option that best fits your needs and budget.
+### Regular Checks (Recommended Weekly)
+
+1. **Check application logs:**
+   ```powershell
+   ssh -i "cne-2026-key.pem" ubuntu@16.171.10.93 "pm2 logs --lines 200"
+   ```
+
+2. **Check disk space:**
+   ```powershell
+   ssh -i "cne-2026-key.pem" ubuntu@16.171.10.93 "df -h"
+   ```
+
+3. **Update packages (monthly):**
+   ```bash
+   cd ~/cne-app
+   npm outdated  # Check for updates
+   npm update    # Update packages
+   ```
+
+### Backup Strategy
+
+**What to backup:**
+- MongoDB database (contains all registrations)
+- Uploaded files in `uploads/` directory
+- `.env` file (environment variables)
+
+**How to backup uploads:**
+```bash
+ssh -i "cne-2026-key.pem" ubuntu@16.171.10.93 "cd ~/cne-app && tar -czf ~/backup-uploads-$(date +%Y%m%d).tar.gz uploads/"
+```
+
+---
+
+## 🎯 Quick Reference
+
+### One-Command Deployment
+```powershell
+# From project directory on your laptop:
+git add -A; git commit -m "Update"; git push origin main; ssh -i "c:\Bitflow Software\CNE\cne-2026-key.pem" ubuntu@16.171.10.93 "cd ~/cne-app && git pull origin main && pm2 restart all"
+```
+
+### Website URLs
+- **Main:** https://www.saicaregroupofinstitutes.com
+- **Registration:** https://www.saicaregroupofinstitutes.com/
+- **View Registration:** https://www.saicaregroupofinstitutes.com/view-registration
+- **Admin Login:** https://www.saicaregroupofinstitutes.com/admin-login
+- **Admin Dashboard:** https://www.saicaregroupofinstitutes.com/admin-dashboard
+- **Workshop Management:** https://www.saicaregroupofinstitutes.com/admin-workshops
+
+### Important File Locations
+
+**On Your Laptop:**
+- Project: `c:\Bitflow Software\CNE\saicaregroup_CNE\`
+- SSH Key: `c:\Bitflow Software\CNE\cne-2026-key.pem`
+
+**On Server:**
+- Application: `/home/ubuntu/cne-app/`
+- Nginx Config: `/etc/nginx/sites-enabled/`
+- SSL Certs: `/etc/letsencrypt/live/www.saicaregroupofinstitutes.com/`
+- PM2 Logs: `/home/ubuntu/.pm2/logs/`
+
+---
+
+## ⚠️ Important Notes
+
+1. **Never commit `.env` file** - Contains sensitive credentials
+2. **Keep `cne-2026-key.pem` secure** - This is your server access key
+3. **Always test locally first** - Before deploying major changes
+4. **Backup before major updates** - Database and uploaded files
+5. **Update IP in security group** - If your internet IP changes
+6. **Monitor PM2 logs** - For errors and issues
+
+---
+
+## 📞 Support Information
+
+**Repository:** https://github.com/bitflownova-coder/saicaregroup_CNE  
+**EC2 Instance:** i-01fbe111dacd87669 (eu-north-1)  
+**Domain:** www.saicaregroupofinstitutes.com  
+
+---
+
+**Last Updated:** January 8, 2026  
+**Deployment Method:** Git + SSH + PM2
