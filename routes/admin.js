@@ -198,9 +198,11 @@ router.get('/stats', isAuthenticated, async (req, res) => {
     }
 
   } catch (error) {
+    console.error('Stats API error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching stats'
+      message: 'Error fetching stats',
+      error: error.message
     });
   }
 });
