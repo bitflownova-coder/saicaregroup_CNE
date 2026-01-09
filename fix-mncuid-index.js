@@ -1,9 +1,18 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
 
 async function fixMncUidIndex() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    // Get MongoDB URI from command line or environment
+    const mongoUri = process.argv[2] || process.env.MONGO_URI;
+    
+    if (!mongoUri) {
+      console.error('❌ MongoDB URI not provided');
+      console.error('Usage: node fix-mncuid-index.js <MONGO_URI>');
+      console.error('   or: Set MONGO_URI in environment');
+      process.exit(1);
+    }
+
+    await mongoose.connect(mongoUri);
     console.log('Connected to MongoDB');
 
     const db = mongoose.connection.db;
