@@ -62,8 +62,14 @@ async function handleLookup(e) {
         showSpinner(false);
 
         if (data.success) {
-            currentRegistration = data.data;
-            showRegistrationDetails(data.data);
+            // Handle multiple registrations (newest first)
+            if (Array.isArray(data.data)) {
+                showAllRegistrations(data.data);
+            } else {
+                // Fallback for single registration (backward compatibility)
+                currentRegistration = data.data;
+                showRegistrationDetails(data.data);
+            }
         } else {
             showAlert(data.message || 'No registration found with these details', 'error');
         }
@@ -72,6 +78,115 @@ async function handleLookup(e) {
         showSpinner(false);
         showAlert('Network error. Please try again.', 'error');
     }
+}
+
+// Show all registrations (newest first)
+function showAllRegistrations(registrations) {
+    const detailsDiv = document.getElementById('registrationDetails');
+    
+    let html = '';
+    
+    if (registrations.length > 1) {
+        html += `<div style="background: #e0f2fe; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+            <strong>✅ Found ${registrations.length} registrations</strong> (showing newest first)
+        </div>`;
+    }
+    
+    registrations.forEach((data, index) => {
+        const submittedDate = new Date(data.submittedAt).toLocaleString('en-IN', {
+            dateStyle: 'long',
+            timeStyle: 'short'
+        });
+        
+        const remainingDownloads = 2 - data.downloadCount;
+        const isNewest = index === 0;
+        
+        html += `
+            <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); ${isNewest ? 'border: 3px solid #10b981;' : ''}">
+                ${isNewest ? '<div style="background: #10b981; color: white; padding: 6px 12px; border-radius: 6px; display: inline-block; margin-bottom: 12px; font-weight: 600;">📌 Latest Registration</div>' : ''}
+                ${data.workshop ? `<h3 style="color: #667eea; margin-bottom: 16px;">🎓 ${data.workshop.title}</h3>` : ''}
+                
+                <div class="review-details">
+                    <div class="review-item">
+                        <strong>Form Number</strong>
+                        <span>${data.formNumber || 'N/A'}</span>
+                    </div>
+                    <div class="review-item">
+                        <strong>Full Name</strong>
+                        <span>${data.fullName}</span>
+                    </div>
+                    <div class="review-item">
+                        <strong>MNC UID</strong>
+                        <span>${data.mncUID}</span>
+                    </div>
+                    <div class="review-item">
+                        <strong>MNC Registration Number</strong>
+                        <span>${data.mncRegistrationNumber}</span>
+                    </div>
+                    <div class="review-item">
+                        <strong>Mobile Number</strong>
+                        <span>${data.mobileNumber}</span>
+                    </div>
+                    <div class="review-item">
+                        <strong>Payment UTR / Transaction ID</strong>
+                        <span>${data.paymentUTR}</span>
+                    </div>
+                    <div class="review-item">
+                        <strong>Submitted At</strong>
+                        <span>${submittedDate}</span>
+                    </div>
+                    ${data.workshop ? `
+                    <div class="review-item">
+                        <strong>Workshop Date</strong>
+                        <span>${new Date(data.workshop.date).toLocaleDateString('en-IN', { dateStyle: 'long' })}</span>
+                    </div>
+                    <div class="review-item">
+                        <strong>Venue</strong>
+                        <span>${data.workshop.venue}</span>
+                    </div>` : ''}
+                    <div class="review-item">
+                        <strong>Payment Screenshot</strong>
+                        <span><img src="/uploads/payments/${data.paymentScreenshot}" style="max-width: 300px; border-radius: 8px; margin-top: 10px;" alt="Payment Screenshot"></span>
+                    </div>
+                    <div class="review-item">
+                        <strong>Download Status</strong>
+                        <span style="color: ${remainingDownloads > 0 ? '#10b981' : '#ef4444'}; font-weight: 600;">
+                            ${remainingDownloads > 0 ? `📥 ${remainingDownloads}/2 downloads remaining` : '❌ Limit reached (2/2)'}
+                        </span>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" ${remainingDownloads <= 0 ? 'disabled' : ''} 
+                    onclick="downloadRegistration(${index})" 
+                    style="width: 100%; margin-top: 16px; ${remainingDownloads <= 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                    ${remainingDownloads > 0 ? '📄 Download PDF' : '❌ Download Limit Reached'}
+                </button>
+            </div>
+        `;
+    });
+    
+    detailsDiv.innerHTML = html;
+    
+    // Store all registrations globally
+    window.allRegistrations = registrations;
+    
+    // Set the first (newest) as current
+    currentRegistration = registrations[0];
+    
+    // Hide download info section (now shown in each card)
+    document.getElementById('downloadInfo').style.display = 'none';
+    document.getElementById('downloadBtn').style.display = 'none';
+    
+    // Show the results card
+    document.getElementById('lookupCard').style.display = 'none';
+    document.getElementById('resultCard').style.display = 'block';
+}
+
+// Download specific registration
+function downloadRegistration(index) {
+    const registration = window.allRegistrations[index];
+    currentRegistration = registration;
+    handleDownload();
 }
 
 // Show registration details

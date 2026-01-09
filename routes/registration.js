@@ -225,34 +225,41 @@ router.post('/view', async (req, res) => {
       query.workshopId = workshopId;
     }
 
-    const registration = await Registration.findOne(query).populate('workshopId', 'title date venue');
+    // Find ALL registrations for this user, sorted by newest first
+    const registrations = await Registration.find(query)
+      .populate('workshopId', 'title date venue')
+      .sort({ submittedAt: -1 }); // Newest first
 
-    if (!registration) {
+    if (!registrations || registrations.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'No registration found with these details'
       });
     }
 
+    // Return all registrations
+    const data = registrations.map(registration => ({
+      formNumber: registration.formNumber,
+      fullName: registration.fullName,
+      mncUID: registration.mncUID,
+      mncRegistrationNumber: registration.mncRegistrationNumber,
+      mobileNumber: registration.mobileNumber,
+      paymentUTR: registration.paymentUTR,
+      paymentScreenshot: registration.paymentScreenshot,
+      submittedAt: registration.submittedAt,
+      downloadCount: registration.downloadCount,
+      canDownload: registration.downloadCount < 2,
+      workshop: registration.workshopId ? {
+        title: registration.workshopId.title,
+        date: registration.workshopId.date,
+        venue: registration.workshopId.venue
+      } : null
+    }));
+
     res.json({
       success: true,
-      data: {
-        formNumber: registration.formNumber,
-        fullName: registration.fullName,
-        mncUID: registration.mncUID,
-        mncRegistrationNumber: registration.mncRegistrationNumber,
-        mobileNumber: registration.mobileNumber,
-        paymentUTR: registration.paymentUTR,
-        paymentScreenshot: registration.paymentScreenshot,
-        submittedAt: registration.submittedAt,
-        downloadCount: registration.downloadCount,
-        canDownload: registration.downloadCount < 2,
-        workshop: registration.workshopId ? {
-          title: registration.workshopId.title,
-          date: registration.workshopId.date,
-          venue: registration.workshopId.venue
-        } : null
-      }
+      data: data,
+      count: data.length
     });
 
   } catch (error) {
