@@ -124,6 +124,13 @@ async function loadRegistrations() {
     try {
         let url = `/api/admin/registrations?limit=1000&search=${searchTerm}`;
         if (selectedWorkshopId) {
+            url += `&workshopId=${selectedWorkshopId}`;
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
             let registrations = data.data || [];
             
             // Sort by registration time (submittedAt)
@@ -138,13 +145,6 @@ async function loadRegistrations() {
                 }
             });
             
-        }
-        
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.success) {
-            const registrations = (data.data || []).sort((a, b) => (a.formNumber || 0) - (b.formNumber || 0));
             displayRegistrations(registrations);
         }
     } catch (error) {
