@@ -11,7 +11,7 @@ const isAuthenticated = (req, res, next) => {
 // Verify admin credentials
 const verifyAdminCredentials = async (username, password) => {
   const adminUsername = process.env.ADMIN_USERNAME || 'saicaregroupofinstitues';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'bHAGIRATH@2025?.';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'bHAGIRATH@7588?.';
   
   // Simple comparison for username
   if (username !== adminUsername) {
