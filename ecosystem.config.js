@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'cne-app',
     script: './server.js',
-    instances: 'max', // Use all available CPU cores
+    instances: 2, // Start with 2 instances (can scale based on CPU cores)
     exec_mode: 'cluster', // Cluster mode for load balancing
     max_memory_restart: '500M', // Restart if memory exceeds 500MB
     error_file: '~/.pm2/logs/cne-app-error.log',
@@ -17,8 +17,6 @@ module.exports = {
     watch: false,
     // Graceful shutdown
     kill_timeout: 5000,
-    wait_ready: true,
-    listen_timeout: 10000,
     // Health check
     max_restarts: 10,
     min_uptime: '10s'
