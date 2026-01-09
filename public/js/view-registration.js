@@ -174,8 +174,10 @@ function showAllRegistrations(registrations) {
     currentRegistration = registrations[0];
     
     // Hide download info section (now shown in each card)
-    document.getElementById('downloadInfo').style.display = 'none';
-    document.getElementById('downloadBtn').style.display = 'none';
+    const downloadInfo = document.getElementById('downloadInfo');
+    const downloadBtn = document.getElementById('downloadBtn');
+    if (downloadInfo) downloadInfo.style.display = 'none';
+    if (downloadBtn) downloadBtn.style.display = 'none';
     
     // Show the results card
     document.getElementById('lookupCard').style.display = 'none';
