@@ -4,7 +4,7 @@ require('dotenv').config();
 async function fixMncUidIndex() {
   try {
     // Get MongoDB URI from command line or environment
-    const mongoUri = process.argv[2] || process.env.MONGO_URI;
+    const mongoUri = process.argv[2] || process.env.MONGO_URI || process.env.MONGODB_URI;
     
     if (!mongoUri) {
       console.error('❌ MongoDB URI not provided');
