@@ -15,9 +15,7 @@ const registrationSchema = new mongoose.Schema({
   mncUID: {
     type: String,
     required: true,
-    unique: true,
-    trim: true,
-    index: true
+    trim: true
   },
   fullName: {
     type: String,
@@ -70,6 +68,7 @@ const registrationSchema = new mongoose.Schema({
 // Index for faster lookups
 registrationSchema.index({ mncUID: 1, mobileNumber: 1 });
 registrationSchema.index({ workshopId: 1, formNumber: 1 }, { unique: true }); // Unique form number per workshop
+registrationSchema.index({ workshopId: 1, mncUID: 1 }, { unique: true }); // Unique MNC UID per workshop
 registrationSchema.index({ workshopId: 1, submittedAt: -1 });
 
 // Virtual for checking download availability
