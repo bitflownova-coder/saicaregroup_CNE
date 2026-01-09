@@ -15,18 +15,22 @@ const adminWorkshopRoutes = require('./routes/adminWorkshop');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Rate limiting
+// Rate limiting - Only apply to form submissions, not GET requests
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 1000 requests per windowMs
+  max: 5000, // Increased limit for high traffic
   message: 'Too many requests from this IP, please try again later.',
   skip: (req) => {
-    // Exclude count endpoint and admin auth endpoints from rate limiting
-    return req.path === '/api/registration/count' ||
-           req.path === '/api/admin/check-session' ||
-           req.path === '/api/admin/login' ||
-           req.path === '/api/admin/logout' ||
-           req.path.startsWith('/api/admin/');
+    // Skip rate limiting for all GET requests (read-only operations)
+    if (req.method === 'GET') {
+      return true;
+    }
+    // Skip admin routes
+    if (req.path.startsWith('/api/admin/')) {
+      return true;
+    }
+    // Only apply rate limiting to POST/PUT/DELETE operations
+    return false;
   }
 });
 
