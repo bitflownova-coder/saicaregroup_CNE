@@ -21,8 +21,12 @@ const limiter = rateLimit({
   max: 1000, // limit each IP to 1000 requests per windowMs
   message: 'Too many requests from this IP, please try again later.',
   skip: (req) => {
-    // Exclude count endpoint from rate limiting
-    return req.path === '/api/registration/count';
+    // Exclude count endpoint and admin auth endpoints from rate limiting
+    return req.path === '/api/registration/count' ||
+           req.path === '/api/admin/check-session' ||
+           req.path === '/api/admin/login' ||
+           req.path === '/api/admin/logout' ||
+           req.path.startsWith('/api/admin/');
   }
 });
 
