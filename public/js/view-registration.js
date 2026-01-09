@@ -181,7 +181,7 @@ function showAllRegistrations(registrations) {
     
     // Show the results card
     document.getElementById('lookupCard').style.display = 'none';
-    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('detailsCard').style.display = 'block';
 }
 
 // Download specific registration
