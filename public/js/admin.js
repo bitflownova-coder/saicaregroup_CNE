@@ -1,6 +1,7 @@
 // Admin Dashboard Handler - Mobile-Friendly Version
 let selectedWorkshopId = '';
 let searchTerm = '';
+let sortOrder = 'newest'; // Default to newest first
 
 // Check authentication on load
 document.addEventListener('DOMContentLoaded', () => {
@@ -34,6 +35,7 @@ function setupEventListeners() {
     const downloadExcelBtn = document.getElementById('downloadExcelBtn');
     const searchBox = document.getElementById('searchBox');
     const workshopFilter = document.getElementById('workshopFilter');
+    const sortOrderSelect = document.getElementById('sortOrder');
 
     logoutBtn.addEventListener('click', handleLogout);
     downloadExcelBtn.addEventListener('click', downloadExcel);
@@ -42,6 +44,12 @@ function setupEventListeners() {
     workshopFilter.addEventListener('change', (e) => {
         selectedWorkshopId = e.target.value;
         loadStats(selectedWorkshopId);
+        loadRegistrations();
+    });
+
+    // Sort order filter
+    sortOrderSelect.addEventListener('change', (e) => {
+        sortOrder = e.target.value;
         loadRegistrations();
     });
 
@@ -116,7 +124,20 @@ async function loadRegistrations() {
     try {
         let url = `/api/admin/registrations?limit=1000&search=${searchTerm}`;
         if (selectedWorkshopId) {
-            url += `&workshopId=${selectedWorkshopId}`;
+            let registrations = data.data || [];
+            
+            // Sort by registration time (submittedAt)
+            registrations.sort((a, b) => {
+                const dateA = new Date(a.submittedAt);
+                const dateB = new Date(b.submittedAt);
+                
+                if (sortOrder === 'newest') {
+                    return dateB - dateA; // Newest first (descending)
+                } else {
+                    return dateA - dateB; // Oldest first (ascending)
+                }
+            });
+            
         }
         
         const response = await fetch(url);
