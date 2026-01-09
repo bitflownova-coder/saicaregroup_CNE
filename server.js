@@ -6,6 +6,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
 
 const registrationRoutes = require('./routes/registration');
 const adminRoutes = require('./routes/admin');
@@ -15,11 +16,13 @@ const adminWorkshopRoutes = require('./routes/adminWorkshop');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Rate limiting
+// Rate limiting - optimized for high traffic
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 1000 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
+  max: 5000, // Increased to 5000 requests per 15 min per IP (supports 1000+ concurrent users)
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests from this IP, please try again later.' },
   skip: (req) => {
     // Exclude count endpoint and admin auth endpoints from rate limiting
     return req.path === '/api/registration/count' ||
@@ -31,14 +34,18 @@ const limiter = rateLimit({
 });
 
 // Middleware
+app.use(compression()); // Enable gzip compression
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Trust proxy for rate limiting behind nginx
+app.set('trust proxy', 1);
 
 // Serve static files BEFORE rate limiting
-app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
-app.use('/assest', express.static('assest'));
+app.use(express.static('public', { maxAge: '1d' })); // Cache static files for 1 day
+app.use('/uploads', express.static('uploads', { maxAge: '7d' })); // Cache uploads for 7 days
+app.use('/assest', express.static('assest', { maxAge: '7d' }));
 
 // Apply rate limiting only to API routes
 app.use('/api/', limiter);
@@ -79,8 +86,14 @@ app.use('/assest', express.static('assest'));
 // Apply rate limiting only to API routes
 app.use('/api/', limiter);
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/saicare_cne_registration')
+// MongoDB Connection with optimized settings for high load
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/saicare_cne_registration', {
+  maxPoolSize: 50, // Increase connection pool for high concurrency
+  minPoolSize: 10,
+  maxIdleTimeMS: 30000,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+})
 .then(() => console.log('✅ Connected to MongoDB'))
 .catch((err) => console.error('❌ MongoDB connection error:', err));
 
@@ -117,12 +130,26 @@ app.use((err, req, res, next) => {
   res.status(500).json({
     success: false,
     message: err.message || 'Something went wrong!'
-  });
+  }); with graceful shutdown support
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📝 Registration Form: http://localhost:${PORT}`);
+  console.log(`👀 View Registration: http://localhost:${PORT}/view-registration`);
+  console.log(`🔐 Admin Panel: http://localhost:${PORT}/admin-login`);
+  
+  // Signal PM2 that app is ready
+  if (process.send) {
+    process.send('ready');
+  }
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('Received SIGINT, shutting down gracefully...');
+  server.close(async () => {
+    await mongoose.connection.close();
+    process.exit(0);
+  }
   console.log(`📝 Registration Form: http://localhost:${PORT}`);
   console.log(`👀 View Registration: http://localhost:${PORT}/view-registration`);
   console.log(`🔐 Admin Panel: http://localhost:${PORT}/admin-login`);
