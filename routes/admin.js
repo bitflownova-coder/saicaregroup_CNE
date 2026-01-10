@@ -208,15 +208,27 @@ router.get('/stats', isAuthenticated, async (req, res) => {
 });
 
 // Bulk download as Excel (protected)
-router.get('/download-excel', isAuthenticated, async (req, res) => {
+router.get('/export-excel', isAuthenticated, async (req, res) => {
   try {
-    const registrations = await Registration.find().sort({ submittedAt: -1 });
+    const { workshopId } = req.query;
+    
+    // Build query filter
+    const filter = {};
+    if (workshopId) {
+      filter.workshopId = workshopId;
+    }
+    
+    // Fetch registrations with optional workshop filter
+    const registrations = await Registration.find(filter)
+      .populate('workshopId', 'title')
+      .sort({ submittedAt: -1 });
 
     // Prepare data for Excel
     const excelData = registrations.map((reg, index) => ({
       'S.No': index + 1,
-      'Full Name': reg.fullName,
+      'Workshop': reg.workshopId?.title || 'N/A',
       'Form Number': reg.formNumber,
+      'Full Name': reg.fullName,
       'MNC UID': reg.mncUID,
       'MNC Registration Number': reg.mncRegistrationNumber,
       'Mobile Number': reg.mobileNumber,
@@ -234,6 +246,7 @@ router.get('/download-excel', isAuthenticated, async (req, res) => {
     // Set column widths
     ws['!cols'] = [
       { wch: 6 },  // S.No
+      { wch: 25 }, // Workshop
       { wch: 12 }, // Form Number
       { wch: 25 }, // Full Name
       { wch: 15 }, // MNC UID
@@ -251,8 +264,12 @@ router.get('/download-excel', isAuthenticated, async (req, res) => {
     // Generate buffer
     const excelBuffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
+    // Generate filename based on filter
+    const workshopName = workshopId ? `Workshop_${workshopId}_` : 'All_Workshops_';
+    const filename = `CNE_Registrations_${workshopName}${new Date().toISOString().split('T')[0]}.xlsx`;
+    
     // Set headers for download
-    res.setHeader('Content-Disposition', `attachment; filename=CNE_Registrations_${Date.now()}.xlsx`);
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     
     res.send(excelBuffer);
