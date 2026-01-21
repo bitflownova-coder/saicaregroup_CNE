@@ -698,6 +698,12 @@ function handleFileChange(e) {
 function handleFormSubmit(e) {
     e.preventDefault();
 
+    // Check if workshop is selected
+    if (!currentWorkshop || !currentWorkshop._id) {
+        showAlert('Error: No workshop selected. Please refresh the page and select a workshop first.', 'error');
+        return;
+    }
+
     // Update step indicator
     const formTitle = document.getElementById('formTitle');
     if (formTitle && currentWorkshop) {
@@ -861,8 +867,9 @@ function closeModal() {
 
 // Confirm submission
 async function confirmSubmission() {
-    if (!currentWorkshop) {
-        showAlert('No active workshop available', 'error');
+    if (!currentWorkshop || !currentWorkshop._id) {
+        showAlert('Error: No workshop selected. Please refresh the page and select a workshop.', 'error');
+        closeModal();
         return;
     }
 
