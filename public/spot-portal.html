@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spot Registration Portal - SaiCareGroup CNE</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .portal-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .workshop-selector {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .qr-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .qr-canvas {
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border: 3px solid #f59e0b;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #f59e0b;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 10px;
+        }
+        .spot-instruction {
+            background: #fff7ed;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #f59e0b;
+        }
+        .warning {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #f59e0b;
+        }
+        .full-banner {
+            background: #dc2626;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="portal-container">
+        <div class="header">
+            <div>
+                <h1>🎫 Spot Registration Portal</h1>
+                <p>On-Site Registration System</p>
+            </div>
+            <div>
+                <button onclick="logout()" class="btn" style="background: white; color: #f59e0b;">Logout</button>
+            </div>
+        </div>
+
+        <div class="workshop-selector">
+            <h2>Select Workshop</h2>
+            <select id="workshopSelect" class="form-control" onchange="selectWorkshop()">
+                <option value="">Loading workshops...</option>
+            </select>
+        </div>
+
+        <div id="workshopContent" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="spotLimit">0</div>
+                    <div class="stat-label">Spot Limit</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="spotCurrent" style="color: #22c55e;">0</div>
+                    <div class="stat-label">Registered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="spotRemaining" style="color: #f59e0b;">0</div>
+                    <div class="stat-label">Remaining</div>
+                </div>
+            </div>
+
+            <div id="fullBanner" class="full-banner" style="display: none;">
+                ⚠️ Spot Registration is FULL - No more spots available
+            </div>
+
+            <div id="qrSection" class="qr-section">
+                <h2>Spot Registration QR Code</h2>
+                <div class="spot-instruction">
+                    <strong>Instructions for Candidates:</strong>
+                    <ol style="text-align: left; margin: 10px 0 0 20px;">
+                        <li>Scan this QR code with your mobile device</li>
+                        <li>Fill in all required registration details</li>
+                        <li>Upload payment screenshot</li>
+                        <li>Submit to complete spot registration</li>
+                    </ol>
+                </div>
+                <div class="qr-canvas">
+                    <div id="qrCanvas"></div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <small style="color: #666;">Workshop: <strong id="selectedWorkshopTitle"></strong></small>
+                    <br>
+                    <button onclick="refreshQR()" class="btn" style="margin-top: 10px; background: #f59e0b;">Refresh QR Code</button>
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Important Notes:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Spot registration is only available during the workshop/event</li>
+                    <li>Limited spots available - first come, first served</li>
+                    <li>Payment is required to complete registration</li>
+                    <li>QR code remains valid for 24 hours or until disabled</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="noWorkshop" class="no-workshop" style="background: white; border-radius: 10px; padding: 40px; text-align: center;">
+            <h3>No workshop selected</h3>
+            <p>Please select a workshop from the dropdown above</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="js/spot-portal.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System Login - SaiCareGroup CNE</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <div class="logo-section">
+                <img src="assest/logo.png" alt="SaiCareGroup Logo" class="logo" onerror="this.style.display='none'">
+                <h1>Attendance System</h1>
+                <p>QR-Based Attendance Marking</p>
+            </div>
+
+            <form id="attendanceLoginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required 
+                           placeholder="Enter username" autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Enter password" autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+
+            <div id="message" class="message" style="display: none;"></div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <a href="admin-login.html" class="link">Admin Login</a> | 
+                <a href="spot-login.html" class="link">Spot Registration</a> |
+                <a href="index.html" class="link">Registration Portal</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('attendanceLoginForm');
+        const messageDiv = document.getElementById('message');
+
+        // Check if already logged in
+        fetch('/api/attendance/check-session')
+            .then(res => {
+                if (res.ok) {
+                    return res.json();
+                }
+                return null;
+            })
+            .then(data => {
+                if (data && data.success) {
+                    window.location.href = 'attendance-portal.html';
+                }
+            })
+            .catch(err => {
+                // Not logged in, stay on login page
+            });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const response = await fetch('/api/attendance/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.textContent = 'Login successful! Redirecting...';
+                    messageDiv.className = 'message success';
+                    messageDiv.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        window.location.href = 'attendance-portal.html';
+                    }, 1000);
+                } else {
+                    messageDiv.textContent = data.message || 'Login failed';
+                    messageDiv.className = 'message error';
+                    messageDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                messageDiv.textContent = 'Login failed. Please try again.';
+                messageDiv.className = 'message error';
+                messageDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

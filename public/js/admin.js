@@ -110,6 +110,37 @@ async function loadStats(workshopId = '') {
             document.getElementById('percentageFilled').textContent = data.stats.percentageFilled + '%';
             statsSection.style.display = 'grid';
         }
+        
+        // Also fetch attendance stats
+        try {
+            const attendanceResponse = await fetch(`/api/attendance/stats/${workshopId}`);
+            const attendanceData = await attendanceResponse.json();
+            
+            if (attendanceData.success) {
+                document.getElementById('presentCount').textContent = attendanceData.data.totalPresent || 0;
+                document.getElementById('appliedCount').textContent = attendanceData.data.totalApplied || 0;
+            }
+        } catch (err) {
+            // Attendance stats optional, don't fail if not available
+            console.log('Attendance stats not available');
+            document.getElementById('presentCount').textContent = '0';
+            document.getElementById('appliedCount').textContent = '0';
+        }
+        
+        // Fetch spot registration count
+        try {
+            const spotResponse = await fetch(`/api/spot-registration/stats/${workshopId}`);
+            const spotData = await spotResponse.json();
+            
+            if (spotData.success) {
+                document.getElementById('spotCount').textContent = spotData.data.currentSpotRegistrations || 0;
+            }
+        } catch (err) {
+            // Spot stats optional
+            console.log('Spot registration stats not available');
+            document.getElementById('spotCount').textContent = '0';
+        }
+        
     } catch (error) {
         console.error('Error loading stats:', error);
         statsSection.style.display = 'none';
@@ -153,7 +184,7 @@ async function loadRegistrations() {
     }
 }
 
-// Display registrations as cards
+// Display registrations as Excel-like table
 function displayRegistrations(registrations) {
     const listContainer = document.getElementById('registrationsList');
     
@@ -162,56 +193,82 @@ function displayRegistrations(registrations) {
         return;
     }
 
-    let cardsHTML = '';
+    let tableHTML = `
+        <table class="registrations-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Form No.</th>
+                    <th>Full Name</th>
+                    <th>MNC UID</th>
+                    <th>Mobile Number</th>
+                    <th>Payment UTR</th>
+                    <th>Workshop</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Submitted</th>
+                    <th>Downloads</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
     
-    registrations.forEach(reg => {
+    registrations.forEach((reg, index) => {
         const submittedDate = new Date(reg.submittedAt).toLocaleDateString('en-IN', {
             day: '2-digit',
             month: 'short',
             year: 'numeric'
         });
         
-        cardsHTML += `
-            <div class="registration-card">
-                <div class="reg-header">
-                    <div class="reg-name">${escapeHtml(reg.fullName)}</div>
-                    <div class="reg-form-no">Form ${reg.formNumber || '-'}</div>
-                </div>
-                <div class="reg-details">
-                    <div class="reg-detail-row">
-                        <span class="reg-detail-label">MNC UID:</span>
-                        <span>${escapeHtml(reg.mncUID)}</span>
-                    </div>
-                    <div class="reg-detail-row">
-                        <span class="reg-detail-label">Mobile:</span>
-                        <span>${reg.mobileNumber}</span>
-                    </div>
-                    <div class="reg-detail-row">
-                        <span class="reg-detail-label">Payment UTR:</span>
-                        <span>${reg.paymentUTR}</span>
-                    </div>
-                    <div class="reg-detail-row">
-                        <span class="reg-detail-label">Submitted:</span>
-                        <span>${submittedDate}</span>
-                    </div>
-                    <div class="reg-detail-row">
-                        <span class="reg-detail-label">Downloads:</span>
-                        <span style="color: ${reg.downloadCount >= 2 ? '#ef4444' : '#10b981'}; font-weight: 700;">${reg.downloadCount}/2</span>
-                    </div>
-                </div>
-                <div class="reg-actions">
-                    <button class="btn btn-primary btn-small" onclick="viewPayment('${reg.paymentScreenshot}')">
-                        View Payment
+        // Attendance status
+        const attendanceStatus = reg.attendanceStatus || 'applied';
+        const statusClass = attendanceStatus === 'present' ? 'status-present' : 'status-applied';
+        const statusText = attendanceStatus === 'present' ? '✓ Present' : '○ Applied';
+        
+        // Registration type
+        const regType = reg.registrationType || 'online';
+        const typeClass = regType === 'spot' ? 'type-spot' : 'type-online';
+        const typeText = regType === 'spot' ? 'Spot' : 'Online';
+        
+        // Workshop title (truncate if too long)
+        const workshopTitle = reg.workshopId?.title || reg.workshopTitle || 'N/A';
+        const shortTitle = workshopTitle.length > 30 ? workshopTitle.substring(0, 27) + '...' : workshopTitle;
+        
+        // Download count color
+        const downloadColor = reg.downloadCount >= 2 ? '#ef4444' : '#10b981';
+        
+        tableHTML += `
+            <tr>
+                <td><strong>${index + 1}</strong></td>
+                <td><strong>${reg.formNumber || '-'}</strong></td>
+                <td>${escapeHtml(reg.fullName)}</td>
+                <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${escapeHtml(reg.mncUID)}</code></td>
+                <td>${reg.mobileNumber}</td>
+                <td><small>${reg.paymentUTR}</small></td>
+                <td title="${escapeHtml(workshopTitle)}">${escapeHtml(shortTitle)}</td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td><span class="status-badge ${typeClass}">${typeText}</span></td>
+                <td><small>${submittedDate}</small></td>
+                <td style="color: ${downloadColor}; font-weight: 700;">${reg.downloadCount}/2</td>
+                <td style="white-space: nowrap;">
+                    <button class="btn btn-primary btn-table" onclick="viewPayment('${reg.paymentScreenshot}')" title="View Payment Screenshot">
+                        👁️
                     </button>
-                    <button class="btn btn-danger btn-small" onclick="deleteRegistration('${reg._id}')">
-                        Delete
+                    <button class="btn btn-danger btn-table" onclick="deleteRegistration('${reg._id}')" title="Delete Registration">
+                        🗑️
                     </button>
-                </div>
-            </div>
+                </td>
+            </tr>
         `;
     });
     
-    listContainer.innerHTML = cardsHTML;
+    tableHTML += `
+            </tbody>
+        </table>
+    `;
+    
+    listContainer.innerHTML = tableHTML;
 }
 
 // View payment screenshot

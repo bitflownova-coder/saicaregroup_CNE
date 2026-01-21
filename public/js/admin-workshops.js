@@ -77,9 +77,11 @@ function renderWorkshopsTable(workshops) {
             day: 'numeric' 
         });
         
-        const seatsUsed = workshop.currentRegistrations;
-        const seatsTotal = workshop.maxSeats;
-        const seatsPercent = (seatsUsed / seatsTotal * 100).toFixed(0);
+        const onlineSeats = workshop.currentRegistrations || 0;
+        const spotSeats = workshop.currentSpotRegistrations || 0;
+        const totalSeats = workshop.maxSeats;
+        const spotLimit = workshop.spotRegistrationLimit || 0;
+        const seatsPercent = (onlineSeats / totalSeats * 100).toFixed(0);
         const seatsClass = seatsPercent >= 90 ? 'seats-warning' : '';
 
         return `
@@ -99,8 +101,9 @@ function renderWorkshopsTable(workshops) {
                 </td>
                 <td>
                     <div class="seats-info ${seatsClass}">
-                        ${seatsUsed} / ${seatsTotal}
-                        <div style="font-size: 11px;">(${seatsPercent}% filled)</div>
+                        <div style="font-weight: 600;">Online: ${onlineSeats} / ${totalSeats}</div>
+                        ${spotLimit > 0 ? `<div style="font-size: 11px; color: #6a1b9a; margin-top: 2px;">Spot: ${spotSeats} / ${spotLimit}</div>` : ''}
+                        <div style="font-size: 11px; color: #666; margin-top: 2px;">(${seatsPercent}% online filled)</div>
                     </div>
                 </td>
                 <td>₹${workshop.fee}</td>
@@ -108,7 +111,7 @@ function renderWorkshopsTable(workshops) {
                 <td>
                     <div class="action-buttons">
                         <button class="action-btn btn-view" onclick="viewRegistrations('${workshop._id}')">
-                            📋 View (${seatsUsed})
+                            📋 View (${onlineSeats + spotSeats})
                         </button>
                         <button class="action-btn btn-edit" onclick="editWorkshop('${workshop._id}')">
                             ✏️ Edit
@@ -119,7 +122,7 @@ function renderWorkshopsTable(workshops) {
                         <button class="action-btn btn-status" onclick="showStatusModal('${workshop._id}')">
                             🔄 Status
                         </button>
-                        <button class="action-btn btn-delete" onclick="deleteWorkshop('${workshop._id}', ${seatsUsed})">
+                        <button class="action-btn btn-delete" onclick="deleteWorkshop('${workshop._id}', ${onlineSeats + spotSeats})">
                             🗑️ Delete
                         </button>
                     </div>
@@ -170,6 +173,8 @@ async function editWorkshop(id) {
             document.getElementById('credits').value = workshop.credits;
             document.getElementById('maxSeats').value = workshop.maxSeats;
             document.getElementById('status').value = workshop.status;
+            document.getElementById('spotRegistrationEnabled').checked = workshop.spotRegistrationEnabled || false;
+            document.getElementById('spotRegistrationLimit').value = workshop.spotRegistrationLimit || 0;
 
             // Show current QR code if exists
             if (workshop.qrCodeImage) {
@@ -219,6 +224,8 @@ async function saveWorkshop(event) {
         formData.append('credits', document.getElementById('credits').value);
         formData.append('maxSeats', document.getElementById('maxSeats').value);
         formData.append('status', document.getElementById('status').value);
+        formData.append('spotRegistrationEnabled', document.getElementById('spotRegistrationEnabled').checked);
+        formData.append('spotRegistrationLimit', document.getElementById('spotRegistrationLimit').value || 0);
 
         // QR Code is uploaded separately via Upload QR button
         
@@ -334,6 +341,12 @@ function showStatusModal(id) {
     document.getElementById('currentStatus').value = workshop.status.toUpperCase();
     document.getElementById('newStatus').value = '';
     document.getElementById('statusWarning').style.display = 'none';
+    document.getElementById('spotSettingsInStatus').style.display = 'none';
+    
+    // Set current spot settings
+    document.getElementById('statusSpotEnabled').checked = workshop.spotRegistrationEnabled || false;
+    document.getElementById('statusSpotLimit').value = workshop.spotRegistrationLimit || 0;
+    
     document.getElementById('statusModal').style.display = 'block';
 
     // Add event listener for status selection
@@ -341,18 +354,28 @@ function showStatusModal(id) {
         const newStatus = this.value;
         const warning = document.getElementById('statusWarning');
         const warningText = document.getElementById('statusWarningText');
+        const spotSettings = document.getElementById('spotSettingsInStatus');
 
-        if (newStatus === 'active' && workshop.status !== 'active') {
-            warningText.textContent = 'Setting this workshop as ACTIVE will make it visible to users for registration. Multiple workshops can be active simultaneously.';
-            warning.style.display = 'block';
-        } else if (newStatus === 'completed') {
-            warningText.textContent = 'Marking as COMPLETED will close registration permanently.';
-            warning.style.display = 'block';
-        } else if (newStatus === 'cancelled') {
-            warningText.textContent = 'Cancelled workshops cannot accept registrations.';
+        // Show spot settings for 'spot' status
+        if (newStatus === 'spot') {
+            spotSettings.style.display = 'block';
+            warningText.textContent = 'Spot status allows extra registrations beyond max seats. Configure spot settings below.';
             warning.style.display = 'block';
         } else {
-            warning.style.display = 'none';
+            spotSettings.style.display = 'none';
+            
+            if (newStatus === 'active' && workshop.status !== 'active') {
+                warningText.textContent = 'Setting this workshop as ACTIVE will make it visible to users for registration. Multiple workshops can be active simultaneously.';
+                warning.style.display = 'block';
+            } else if (newStatus === 'completed') {
+                warningText.textContent = 'Marking as COMPLETED will close registration permanently.';
+                warning.style.display = 'block';
+            } else if (newStatus === 'cancelled') {
+                warningText.textContent = 'Cancelled workshops cannot accept registrations.';
+                warning.style.display = 'block';
+            } else {
+                warning.style.display = 'none';
+            }
         }
     };
 }
@@ -370,12 +393,21 @@ async function changeStatus(event) {
             return;
         }
 
+        // Prepare the request body
+        const requestBody = { status: newStatus };
+        
+        // If changing to 'spot' status, include spot settings
+        if (newStatus === 'spot') {
+            requestBody.spotRegistrationEnabled = document.getElementById('statusSpotEnabled').checked;
+            requestBody.spotRegistrationLimit = parseInt(document.getElementById('statusSpotLimit').value) || 0;
+        }
+
         const response = await fetch(`/api/admin/workshops/${workshopId}/status`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ status: newStatus })
+            body: JSON.stringify(requestBody)
         });
 
         const result = await response.json();

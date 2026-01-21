@@ -55,7 +55,7 @@ const workshopSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ['draft', 'upcoming', 'active', 'full', 'completed', 'cancelled'],
+    enum: ['draft', 'upcoming', 'active', 'full', 'completed', 'cancelled', 'spot'],
     default: 'draft'
   },
   registrationStartDate: {
@@ -63,6 +63,29 @@ const workshopSchema = new mongoose.Schema({
     default: null
   },
   registrationEndDate: {
+    type: Date,
+    default: null
+  },
+  // Spot Registration fields
+  spotRegistrationEnabled: {
+    type: Boolean,
+    default: false
+  },
+  spotRegistrationLimit: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  currentSpotRegistrations: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  spotRegistrationQRToken: {
+    type: String,
+    default: null
+  },
+  spotRegistrationTokenExpiry: {
     type: Date,
     default: null
   },

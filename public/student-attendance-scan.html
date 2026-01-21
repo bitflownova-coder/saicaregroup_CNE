@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance - SaiCareGroup CNE</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        .attendance-container {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        .attendance-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        #qr-reader {
+            width: 100%;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .scanner-section {
+            margin: 20px 0;
+        }
+        .form-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid var(--border-color);
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .btn-scan {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .btn-scan:hover {
+            opacity: 0.9;
+        }
+        .btn-stop {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="attendance-container">
+        <div class="attendance-box">
+            <div class="logo-section">
+                <img src="assest/logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
+                <h1 style="color: var(--primary-color);">Mark Attendance</h1>
+                <p style="color: #666; margin-top: 10px;">Scan the QR code displayed by your instructor</p>
+            </div>
+
+            <div class="info-box">
+                <strong>📱 How to use:</strong>
+                <ol style="margin: 10px 0 0 20px; color: #555;">
+                    <li>Click "Start QR Scanner" below</li>
+                    <li>Point your camera at the QR code shown by the instructor</li>
+                    <li>Enter your MNC UID and Mobile Number</li>
+                    <li>Click "Mark Attendance"</li>
+                </ol>
+            </div>
+
+            <!-- Scanner Section -->
+            <div class="scanner-section">
+                <button id="startScanBtn" class="btn-scan" onclick="startScanner()">
+                    📷 Start QR Scanner
+                </button>
+                <button id="stopScanBtn" class="btn-scan btn-stop" style="display: none;" onclick="stopScanner()">
+                    ⏹️ Stop Scanner
+                </button>
+                <div id="qr-reader" style="display: none;"></div>
+                <div id="scanResult" style="margin-top: 15px; display: none;">
+                    <p style="color: #10b981; font-weight: 600;">✓ QR Code Scanned Successfully!</p>
+                    <p style="color: #666; font-size: 14px;">Please fill in your details below</p>
+                </div>
+            </div>
+
+            <!-- Form Section -->
+            <div class="form-section" id="formSection" style="display: none;">
+                <h3 style="margin-bottom: 20px; color: var(--text-dark);">Your Details</h3>
+                <form id="attendanceForm">
+                    <input type="hidden" id="workshopToken">
+                    
+                    <div class="form-group">
+                        <label for="mncUID">MNC UID *</label>
+                        <input type="text" id="mncUID" required 
+                               placeholder="e.g., MNC2024001" 
+                               style="text-transform: uppercase;">
+                        <small>Your MNC Unique Identification Number</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mobileNumber">Mobile Number *</label>
+                        <input type="tel" id="mobileNumber" required 
+                               placeholder="e.g., 9876543210"
+                               pattern="[0-9]{10}"
+                               maxlength="10">
+                        <small>10-digit mobile number</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+                        ✅ Mark My Attendance
+                    </button>
+                </form>
+            </div>
+
+            <!-- Messages -->
+            <div id="successMessage" class="success-message" style="display: none;"></div>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">
+                ← Back to Home
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let html5QrCode = null;
+        let scannedToken = null;
+
+        function startScanner() {
+            const qrReader = document.getElementById('qr-reader');
+            qrReader.style.display = 'block';
+            document.getElementById('startScanBtn').style.display = 'none';
+            document.getElementById('stopScanBtn').style.display = 'block';
+
+            html5QrCode = new Html5Qrcode("qr-reader");
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                (decodedText, decodedResult) => {
+                    // Successfully scanned
+                    if (decodedText.includes('attendance-scan.html?token=')) {
+                        // Extract token from URL
+                        const url = new URL(decodedText);
+                        scannedToken = url.searchParams.get('token');
+                        
+                        if (scannedToken) {
+                            document.getElementById('workshopToken').value = scannedToken;
+                            document.getElementById('scanResult').style.display = 'block';
+                            document.getElementById('formSection').style.display = 'block';
+                            stopScanner();
+                        }
+                    } else {
+                        showError('Invalid QR Code. Please scan the attendance QR code from your instructor.');
+                    }
+                },
+                (errorMessage) => {
+                    // Scanning error (can be ignored)
+                }
+            ).catch(err => {
+                console.error('Camera error:', err);
+                showError('Unable to access camera. Please check permissions.');
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('qr-reader').style.display = 'none';
+                    document.getElementById('startScanBtn').style.display = 'block';
+                    document.getElementById('stopScanBtn').style.display = 'none';
+                }).catch(err => {
+                    console.error('Error stopping scanner:', err);
+                });
+            }
+        }
+
+        document.getElementById('attendanceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const token = document.getElementById('workshopToken').value;
+            const mncUID = document.getElementById('mncUID').value.trim().toUpperCase();
+            const mobileNumber = document.getElementById('mobileNumber').value.trim();
+
+            if (!token) {
+                showError('Please scan the QR code first');
+                return;
+            }
+
+            if (!/^[0-9]{10}$/.test(mobileNumber)) {
+                showError('Please enter a valid 10-digit mobile number');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/attendance/scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        mncUID: mncUID,
+                        mobileNumber: mobileNumber
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccess(`✓ Attendance marked successfully!<br>Workshop: ${result.workshopTitle || 'CNE Workshop'}<br>Student: ${result.studentName || mncUID}`);
+                    document.getElementById('attendanceForm').reset();
+                    document.getElementById('formSection').style.display = 'none';
+                    document.getElementById('scanResult').style.display = 'none';
+                    scannedToken = null;
+                } else {
+                    showError(result.message || 'Failed to mark attendance');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error marking attendance. Please try again.');
+            }
+        });
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.innerHTML = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 10000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

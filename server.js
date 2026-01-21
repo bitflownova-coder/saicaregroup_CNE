@@ -11,6 +11,8 @@ const registrationRoutes = require('./routes/registration');
 const adminRoutes = require('./routes/admin');
 const workshopRoutes = require('./routes/workshop');
 const adminWorkshopRoutes = require('./routes/adminWorkshop');
+const attendanceRoutes = require('./routes/attendance');
+const spotRegistrationRoutes = require('./routes/spotRegistration');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -93,6 +95,8 @@ app.use('/api/registration', registrationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/workshop', workshopRoutes);
 app.use('/api/admin/workshops', adminWorkshopRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/spot-registration', spotRegistrationRoutes);
 
 // Serve HTML pages
 app.get('/', (req, res) => {
@@ -115,6 +119,30 @@ app.get('/admin-workshops', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-workshops.html'));
 });
 
+app.get('/attendance-login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'attendance-login.html'));
+});
+
+app.get('/attendance-portal', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'attendance-portal.html'));
+});
+
+app.get('/attendance-scan', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'attendance-scan.html'));
+});
+
+app.get('/spot-login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'spot-login.html'));
+});
+
+app.get('/spot-portal', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'spot-portal.html'));
+});
+
+app.get('/spot-register', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'spot-register.html'));
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
@@ -130,6 +158,8 @@ app.listen(PORT, () => {
   console.log(`📝 Registration Form: http://localhost:${PORT}`);
   console.log(`👀 View Registration: http://localhost:${PORT}/view-registration`);
   console.log(`🔐 Admin Panel: http://localhost:${PORT}/admin-login`);
+  console.log(`📊 Attendance Portal: http://localhost:${PORT}/attendance-login`);
+  console.log(`🎫 Spot Registration: http://localhost:${PORT}/spot-login`);
 });
 
 module.exports = app;

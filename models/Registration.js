@@ -47,6 +47,18 @@ const registrationSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  registrationType: {
+    type: String,
+    enum: ['online', 'spot'],
+    default: 'online',
+    required: true
+  },
+  attendanceStatus: {
+    type: String,
+    enum: ['applied', 'present'],
+    default: 'applied',
+    required: true
+  },
   downloadCount: {
     type: Number,
     default: 0,

@@ -94,6 +94,8 @@ router.post('/', isAuthenticated, upload.single('qrCodeImage'), async (req, res)
       status: req.body.status || 'draft',
       registrationStartDate: req.body.registrationStartDate ? new Date(req.body.registrationStartDate) : null,
       registrationEndDate: req.body.registrationEndDate ? new Date(req.body.registrationEndDate) : null,
+      spotRegistrationEnabled: req.body.spotRegistrationEnabled === 'true' || req.body.spotRegistrationEnabled === true || false,
+      spotRegistrationLimit: parseInt(req.body.spotRegistrationLimit) || 0,
       createdBy: req.session.username || 'admin'
     };
     
@@ -168,12 +170,22 @@ router.put('/:id', isAuthenticated, async (req, res) => {
     
     // Update fields
     const allowedUpdates = ['title', 'description', 'date', 'dayOfWeek', 'venue', 'venueLink', 
-                           'fee', 'credits', 'maxSeats', 'status', 'registrationStartDate', 'registrationEndDate'];
+                           'fee', 'credits', 'maxSeats', 'status', 'registrationStartDate', 'registrationEndDate',
+                           'spotRegistrationEnabled', 'spotRegistrationLimit'];
     
     allowedUpdates.forEach(field => {
       if (req.body[field] !== undefined) {
         if (field === 'date' || field === 'registrationStartDate' || field === 'registrationEndDate') {
           workshop[field] = req.body[field] ? new Date(req.body[field]) : null;
+        } else if (field === 'spotRegistrationEnabled') {
+          workshop[field] = req.body[field] === 'true' || req.body[field] === true;
+        } else if (field === 'spotRegistrationLimit') {
+          const limit = parseInt(req.body[field]);
+          if (limit < workshop.currentSpotRegistrations) {
+            // Skip this update if it would be invalid
+            return;
+          }
+          workshop[field] = limit;
         } else {
           workshop[field] = req.body[field];
         }
@@ -248,7 +260,7 @@ router.post('/:id/upload-qr', isAuthenticated, upload.single('qrCodeImage'), asy
 // Change workshop status
 router.put('/:id/status', isAuthenticated, async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, spotRegistrationEnabled, spotRegistrationLimit } = req.body;
     const workshop = await Workshop.findById(req.params.id);
     
     if (!workshop) {
@@ -270,6 +282,15 @@ router.put('/:id/status', isAuthenticated, async (req, res) => {
     }
     
     workshop.status = status;
+    
+    // If changing to 'spot' status, update spot settings
+    if (status === 'spot' && spotRegistrationEnabled !== undefined) {
+      workshop.spotRegistrationEnabled = spotRegistrationEnabled;
+      if (spotRegistrationLimit !== undefined) {
+        workshop.spotRegistrationLimit = parseInt(spotRegistrationLimit) || 0;
+      }
+    }
+    
     await workshop.save();
     
     res.json({
@@ -385,6 +406,56 @@ router.get('/:id/registrations', isAuthenticated, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching registrations'
+    });
+  }
+});
+
+// Update spot registration settings
+router.put('/:id/spot-settings', isAuthenticated, async (req, res) => {
+  try {
+    const workshop = await Workshop.findById(req.params.id);
+    
+    if (!workshop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Workshop not found'
+      });
+    }
+    
+    const { spotRegistrationEnabled, spotRegistrationLimit } = req.body;
+    
+    if (spotRegistrationEnabled !== undefined) {
+      workshop.spotRegistrationEnabled = spotRegistrationEnabled;
+    }
+    
+    if (spotRegistrationLimit !== undefined) {
+      const limit = parseInt(spotRegistrationLimit);
+      if (limit < workshop.currentSpotRegistrations) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot set limit below current spot registrations (${workshop.currentSpotRegistrations})`
+        });
+      }
+      workshop.spotRegistrationLimit = limit;
+    }
+    
+    await workshop.save();
+    
+    res.json({
+      success: true,
+      message: 'Spot registration settings updated successfully',
+      data: {
+        spotRegistrationEnabled: workshop.spotRegistrationEnabled,
+        spotRegistrationLimit: workshop.spotRegistrationLimit,
+        currentSpotRegistrations: workshop.currentSpotRegistrations
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error updating spot settings:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating spot registration settings'
     });
   }
 });

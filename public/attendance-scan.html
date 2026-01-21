@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance - SaiCareGroup CNE</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .scan-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .scan-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .success-icon {
+            font-size: 4em;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="scan-container">
+        <div class="scan-box">
+            <div class="logo-section">
+                <img src="assest/logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
+                <h1>Mark Attendance</h1>
+            </div>
+
+            <div id="loadingMessage" style="text-align: center; padding: 20px;">
+                <p>Verifying QR code...</p>
+            </div>
+
+            <div id="scanForm" style="display: none;">
+                <form id="attendanceForm">
+                    <div class="form-group">
+                        <label for="mncRegistrationNumber">MNC Registration Number *</label>
+                        <input type="text" id="mncRegistrationNumber" required 
+                               placeholder="e.g., XII-12345" 
+                               style="text-transform: uppercase;">
+                        <small>Enter your MNC Registration Number exactly as shown in your registration</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Mark My Attendance</button>
+                </form>
+            </div>
+
+            <div id="resultMessage" class="message" style="display: none; margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const loadingDiv = document.getElementById('loadingMessage');
+        const formDiv = document.getElementById('scanForm');
+        const resultDiv = document.getElementById('resultMessage');
+        const attendanceForm = document.getElementById('attendanceForm');
+
+        if (!token) {
+            loadingDiv.innerHTML = '<p class="error">Invalid QR code. No token provided.</p>';
+        } else {
+            // Token is valid, show form
+            setTimeout(() => {
+                loadingDiv.style.display = 'none';
+                formDiv.style.display = 'block';
+            }, 500);
+        }
+
+        attendanceForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const mncRegNumber = document.getElementById('mncRegistrationNumber').value.trim().toUpperCase();
+            
+            if (!mncRegNumber) {
+                showMessage('Please enter your MNC Registration Number', 'error');
+                return;
+            }
+
+            // Disable submit button
+            const submitBtn = attendanceForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Marking Attendance...';
+
+            try {
+                const response = await fetch('/api/attendance/scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        mncRegistrationNumber: mncRegNumber
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    formDiv.style.display = 'none';
+                    resultDiv.innerHTML = `
+                        <div class="success-icon">✅</div>
+                        <h2 style="color: #22c55e; text-align: center;">Attendance Marked!</h2>
+                        <p style="text-align: center;">
+                            <strong>${data.data.studentName}</strong><br>
+                            ${data.data.mncRegistrationNumber}<br>
+                            <small>Marked at: ${new Date(data.data.markedAt).toLocaleString()}</small>
+                        </p>
+                    `;
+                    resultDiv.className = 'message success';
+                    resultDiv.style.display = 'block';
+                } else {
+                    showMessage(data.message || 'Failed to mark attendance', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Mark My Attendance';
+                }
+            } catch (error) {
+                console.error('Attendance marking error:', error);
+                showMessage('Failed to mark attendance. Please try again.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Mark My Attendance';
+            }
+        });
+
+        function showMessage(message, type) {
+            resultDiv.textContent = message;
+            resultDiv.className = `message ${type}`;
+            resultDiv.style.display = 'block';
+
+            if (type === 'error') {
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

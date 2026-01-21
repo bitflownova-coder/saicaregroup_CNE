@@ -147,82 +147,95 @@
             border-radius: 16px;
             padding: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        /* Table Styles */
+        .registrations-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+            background: white;
+        }
+
+        .registrations-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .registrations-table th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .registrations-table th:last-child {
+            border-right: none;
+        }
+
+        .registrations-table tbody tr {
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.2s;
+        }
+
+        .registrations-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .registrations-table td {
+            padding: 12px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            border-right: 1px solid #f1f5f9;
+        }
+
+        .registrations-table td:last-child {
+            border-right: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-present {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-applied {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .type-online {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .type-spot {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .btn-table {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            margin: 2px;
         }
 
         .search-box {
             margin-bottom: 20px;
-        }
-
-        .registration-card {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            transition: all 0.2s;
-        }
-
-        .registration-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-        }
-
-        .reg-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .reg-name {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #1e293b;
-        }
-
-        .reg-form-no {
-            background: #667eea;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .reg-details {
-            display: grid;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-
-        .reg-detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .reg-detail-row:last-child {
-            border-bottom: none;
-        }
-
-        .reg-detail-label {
-            font-weight: 600;
-        }
-
-        .reg-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            flex: 1;
         }
 
         /* Loading */
@@ -352,6 +365,18 @@
             <div class="stat-card">
                 <h3>% Filled</h3>
                 <div class="stat-value" id="percentageFilled">0%</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white;">
+                <h3 style="color: white;">Present</h3>
+                <div class="stat-value" id="presentCount" style="color: white;">0</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
+                <h3 style="color: white;">Applied Only</h3>
+                <div class="stat-value" id="appliedCount" style="color: white;">0</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white;">
+                <h3 style="color: white;">Spot Reg.</h3>
+                <div class="stat-value" id="spotCount" style="color: white;">0</div>
             </div>
         </div>
 
