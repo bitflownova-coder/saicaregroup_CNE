@@ -113,8 +113,13 @@ function requireSpotAuth(req, res, next) {
 // Get workshops with spot registration enabled
 router.get('/workshops', requireSpotAuth, async (req, res) => {
   try {
+    // Get today's date at midnight
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Show all workshops that are today or in the future
     const workshops = await Workshop.find({ 
-      status: 'spot'
+      date: { $gte: today }
     }).sort({ date: -1 });
     
     res.json({
