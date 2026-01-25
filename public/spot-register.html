@@ -50,6 +50,24 @@
             <div id="registrationForm" style="display: none;">
                 <div id="workshopInfo" class="workshop-info"></div>
 
+                <!-- Payment QR Code Section -->
+                <div class="workshop-info" style="text-align: center; background: white; border-left: 4px solid #22c55e;">
+                    <h3 style="color: #333; margin-bottom: 15px;">Payment Instructions</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Scan this QR code to make payment</p>
+                    <div style="background: white; padding: 15px; display: inline-block; border-radius: 10px; border: 3px solid #f59e0b;">
+                        <img src="assest/PaymentQR.jpeg" alt="Payment QR Code" 
+                             style="max-width: 250px; width: 100%; height: auto; display: block;"
+                             onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QYXltZW50IFFSIENvZGU8L3RleHQ+PC9zdmc+';">
+                    </div>
+                    <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                        <strong>saicaregroup ofinstitutes.com</strong>
+                    </p>
+                    <div style="background: #fffbeb; padding: 10px; border-radius: 5px; margin-top: 10px; border: 1px solid #fbbf24;">
+                        <p style="margin: 5px 0; font-size: 13px;">⚠️ After payment, enter UTR/Reference number below</p>
+                        <p style="margin: 5px 0; font-size: 13px;">📸 Upload payment screenshot as proof</p>
+                    </div>
+                </div>
+
                 <form id="spotForm" enctype="multipart/form-data">
                     <input type="hidden" id="token" name="token">
 
