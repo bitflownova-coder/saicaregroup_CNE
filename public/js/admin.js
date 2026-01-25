@@ -238,17 +238,12 @@ function displayRegistrations(registrations) {
         // Download count color
         const downloadColor = reg.downloadCount >= 2 ? '#ef4444' : '#10b981';
         
-        // For spot registrations, show MNC Registration Number instead of auto-generated UID
-        const displayIdentifier = regType === 'spot' 
-            ? escapeHtml(reg.mncRegistrationNumber)
-            : escapeHtml(reg.mncUID);
-        
         tableHTML += `
             <tr>
                 <td><strong>${index + 1}</strong></td>
                 <td><strong>${reg.formNumber || '-'}</strong></td>
                 <td>${escapeHtml(reg.fullName)}</td>
-                <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${displayIdentifier}</code></td>
+                <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${escapeHtml(reg.mncUID)}</code></td>
                 <td>${reg.mobileNumber}</td>
                 <td><small>${reg.paymentUTR}</small></td>
                 <td title="${escapeHtml(workshopTitle)}">${escapeHtml(shortTitle)}</td>
