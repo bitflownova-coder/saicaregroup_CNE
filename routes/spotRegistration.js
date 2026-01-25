@@ -259,10 +259,10 @@ router.post('/verify-token', async (req, res) => {
 // Submit spot registration (public endpoint with token)
 router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
   try {
-    const { token, fullName, mncRegistrationNumber, mobileNumber, paymentUTR } = req.body;
+    const { token, fullName, mncUID, mncRegistrationNumber, mobileNumber, paymentUTR } = req.body;
     
     // Validate required fields
-    if (!token || !fullName || !mncRegistrationNumber || !mobileNumber || !paymentUTR) {
+    if (!token || !fullName || !mncUID || !mncRegistrationNumber || !mobileNumber || !paymentUTR) {
       if (req.file) fs.unlinkSync(req.file.path);
       return res.json({
         success: false,
@@ -318,20 +318,17 @@ router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
       });
     }
     
-    // Generate mncUID
-    const mncUID = `SPOT-${workshop._id.toString().slice(-6)}-${Date.now()}`;
-    
-    // Check for duplicate registration
+    // Check for duplicate MNC UID registration
     const existingReg = await Registration.findOne({
       workshopId: workshop._id,
-      mncRegistrationNumber: mncRegistrationNumber.toUpperCase().trim()
+      mncUID: mncUID.trim().toUpperCase()
     });
     
     if (existingReg) {
       if (req.file) fs.unlinkSync(req.file.path);
       return res.json({
         success: false,
-        message: 'This MNC Registration Number is already registered for this workshop'
+        message: 'This MNC UID is already registered for this workshop'
       });
     }
     
@@ -345,7 +342,7 @@ router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
     const registration = await Registration.create({
       workshopId: workshop._id,
       formNumber,
-      mncUID,
+      mncUID: mncUID.trim().toUpperCase(),
       fullName: fullName.trim(),
       mncRegistrationNumber: mncRegistrationNumber.toUpperCase().trim(),
       mobileNumber: mobileNumber.trim(),
