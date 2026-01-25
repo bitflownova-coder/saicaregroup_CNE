@@ -219,12 +219,20 @@ router.post('/scan', async (req, res) => {
         mncUID: searchUID,
         mobileNumber: searchMobile
       });
+      
+      // Debug logging
+      console.log('Attendance lookup:', {
+        workshopId,
+        searchUID,
+        searchMobile,
+        found: !!registration
+      });
     }
     
     if (!registration) {
       return res.json({
         success: false,
-        message: 'No registration found with the provided details for this workshop'
+        message: 'No registration found with the provided details for this workshop. Please check your MNC UID and Mobile Number match your registration.'
       });
     }
     
