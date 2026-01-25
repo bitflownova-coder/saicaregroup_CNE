@@ -219,6 +219,7 @@ function displayRegistrations(registrations) {
                     <th>Status</th>
                     <th>Type</th>
                     <th>Submitted</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -249,7 +250,7 @@ function displayRegistrations(registrations) {
         const downloadColor = reg.downloadCount >= 2 ? '#ef4444' : '#10b981';
         
         tableHTML += `
-            <tr onclick="showRegistrationDetails('${reg._id}')" style="cursor: pointer;">
+            <tr>
                 <td>${index + 1}</td>
                 <td><strong>#${reg.formNumber || '-'}</strong></td>
                 <td>${escapeHtml(reg.fullName)}</td>
@@ -260,6 +261,11 @@ function displayRegistrations(registrations) {
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td><span class="status-badge ${typeClass}">${typeText}</span></td>
                 <td>${submittedDate}</td>
+                <td style="white-space: nowrap;">
+                    <button class="action-btn view" onclick="viewPayment('${reg.paymentScreenshot}')" title="View Payment">🖼️</button>
+                    <button class="action-btn view" onclick="showRegistrationDetails('${reg._id}')" title="View Details">👁️</button>
+                    <button class="action-btn delete" onclick="deleteRegistration('${reg._id}')" title="Delete">🗑️</button>
+                </td>
             </tr>
         `;
     });
