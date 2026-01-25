@@ -15,173 +15,267 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f7fa;
             min-height: 100vh;
-            padding: 16px;
-            padding-bottom: 80px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Header */
-        .header {
+        /* Top Navigation Bar */
+        .navbar {
             background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            color: #667eea;
-            margin-bottom: 8px;
-        }
-
-        .header-actions {
+            padding: 16px 24px;
             display: flex;
-            gap: 10px;
-            margin-top: 16px;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .btn {
-            padding: 10px 20px;
+        .navbar h1 {
+            font-size: 1.4rem;
+            color: #1e40af;
+            font-weight: 700;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
             border-radius: 8px;
-            border: none;
+            border: 2px solid #e2e8f0;
+            background: white;
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
             color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .btn-danger {
-            background: #ef4444;
-            color: white;
+        .nav-btn:hover {
+            border-color: #1e40af;
+            color: #1e40af;
         }
 
-        /* Workshop Selector */
-        .workshop-selector {
-            background: white;
-            border-radius: 16px;
+        .nav-btn.logout {
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        .nav-btn.logout:hover {
+            background: #fef2f2;
+            border-color: #dc2626;
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
             padding: 20px;
+        }
+
+        /* Filter Row */
+        .filter-row {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
 
-        .workshop-selector label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #334155;
-            font-size: 0.95rem;
-        }
-
-        select, input[type="text"] {
-            width: 100%;
-            padding: 12px 16px;
+        .filter-row select {
+            padding: 10px 14px;
             border: 2px solid #e2e8f0;
             border-radius: 8px;
-            font-size: 0.95rem;
-            transition: all 0.2s;
+            font-size: 0.9rem;
+            min-width: 160px;
+            cursor: pointer;
         }
 
-        select:focus, input[type="text"]:focus {
+        .filter-row select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #1e40af;
         }
 
-        /* Stats Cards */
+        .search-wrapper {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 10px 14px 10px 40px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .search-wrapper input:focus {
+            outline: none;
+            border-color: #1e40af;
+        }
+
+        .search-wrapper::before {
+            content: "🔍";
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9rem;
+        }
+
+        .filter-btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #334155;
+        }
+
+        .filter-btn:hover {
+            border-color: #1e40af;
+            color: #1e40af;
+        }
+
+        /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(6, 1fr);
             gap: 16px;
             margin-bottom: 20px;
         }
 
         .stat-card {
             background: white;
-            border-radius: 16px;
+            border-radius: 12px;
             padding: 20px;
             text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
         }
 
-        .stat-card h3 {
-            font-size: 0.85rem;
-            color: #64748b;
+        .stat-icon {
+            font-size: 1.8rem;
             margin-bottom: 8px;
-            font-weight: 600;
         }
 
         .stat-value {
             font-size: 2rem;
             font-weight: 700;
-            color: #667eea;
+            margin-bottom: 4px;
         }
 
-        /* Registrations List */
-        .registrations-container {
+        .stat-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .stat-card.total .stat-icon { color: #3b82f6; }
+        .stat-card.total .stat-value { color: #3b82f6; }
+
+        .stat-card.remaining .stat-icon { color: #f97316; }
+        .stat-card.remaining .stat-value { color: #f97316; }
+
+        .stat-card.present .stat-icon { color: #22c55e; }
+        .stat-card.present .stat-value { color: #22c55e; }
+
+        .stat-card.applied .stat-icon { color: #eab308; }
+        .stat-card.applied .stat-value { color: #eab308; }
+
+        .stat-card.spot .stat-icon { color: #a855f7; }
+        .stat-card.spot .stat-value { color: #a855f7; }
+
+        .stat-card.online .stat-icon { color: #1e293b; }
+        .stat-card.online .stat-value { color: #1e293b; }
+
+        /* Registrations Card */
+        .registrations-card {
             background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+
+        .registrations-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .registrations-header h2 {
+            font-size: 1.1rem;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .export-btn:hover {
+            background: #16a34a;
         }
 
         /* Table Styles */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
         .registrations-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 1200px;
-            background: white;
         }
 
         .registrations-table thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            background: #f8fafc;
         }
 
         .registrations-table th {
-            padding: 14px 12px;
+            padding: 12px 16px;
             text-align: left;
-            font-weight: 700;
-            font-size: 0.9rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #64748b;
+            border-bottom: 2px solid #e2e8f0;
             white-space: nowrap;
-            border-right: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .registrations-table th:last-child {
-            border-right: none;
         }
 
         .registrations-table tbody tr {
-            border-bottom: 1px solid #e2e8f0;
-            transition: background 0.2s;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s;
         }
 
         .registrations-table tbody tr:hover {
@@ -189,28 +283,24 @@
         }
 
         .registrations-table td {
-            padding: 12px;
+            padding: 12px 16px;
             font-size: 0.9rem;
             color: #1e293b;
-            border-right: 1px solid #f1f5f9;
-        }
-
-        .registrations-table td:last-child {
-            border-right: none;
+            white-space: nowrap;
         }
 
         .status-badge {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: 600;
-            white-space: nowrap;
+            text-transform: uppercase;
         }
 
         .status-present {
-            background: #d1fae5;
-            color: #065f46;
+            background: #dcfce7;
+            color: #166534;
         }
 
         .status-applied {
@@ -224,24 +314,45 @@
         }
 
         .type-spot {
-            background: #ede9fe;
-            color: #5b21b6;
+            background: #f3e8ff;
+            color: #7c3aed;
         }
 
-        .btn-table {
-            padding: 6px 12px;
+        .mncuid-badge {
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
             font-size: 0.85rem;
-            margin: 2px;
         }
 
-        .search-box {
-            margin-bottom: 20px;
+        .action-btn {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-right: 4px;
+        }
+
+        .action-btn.view {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .action-btn.delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .action-btn:hover {
+            opacity: 0.8;
         }
 
         /* Loading */
         .spinner {
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border-top: 3px solid #1e40af;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -256,7 +367,7 @@
 
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 60px 20px;
             color: #64748b;
         }
 
@@ -268,10 +379,10 @@
         /* Alert */
         .alert {
             position: fixed;
-            top: 20px;
+            top: 80px;
             right: 20px;
-            max-width: 300px;
-            padding: 16px;
+            max-width: 320px;
+            padding: 14px 18px;
             border-radius: 8px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.15);
             z-index: 1000;
@@ -304,107 +415,121 @@
             }
         }
 
-        /* Mobile Optimization */
-        @media (max-width: 640px) {
-            body {
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 12px;
                 padding: 12px;
-                padding-bottom: 60px;
             }
 
-            .header h1 {
-                font-size: 1.25rem;
+            .nav-buttons {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .filter-row {
+                flex-direction: column;
+            }
+
+            .search-wrapper {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .stat-value {
                 font-size: 1.5rem;
             }
 
-            .btn {
-                width: 100%;
-            }
-
-            .alert {
-                left: 12px;
-                right: 12px;
-                max-width: none;
+            .registrations-header {
+                flex-direction: column;
+                gap: 12px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🎓 Admin Dashboard</h1>
-            <p style="color: #64748b; font-size: 0.9rem;">CNE Registration Management</p>
-            <div class="header-actions">
-                <a href="/admin-workshops" class="btn btn-primary">Workshop Management</a>
-                <a href="/registration-desk" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">🖥️ Registration Desk</a>
-                <a href="/" class="btn btn-secondary">Registration Form</a>
-                <button class="btn btn-danger" id="logoutBtn">Logout</button>
-            </div>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <h1>CNE Admin Dashboard</h1>
+        <div class="nav-buttons">
+            <a href="/admin-workshops" class="nav-btn">⚙️ Workshops</a>
+            <a href="/registration-desk" class="nav-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-color: #10b981;">🖥️ Desk</a>
+            <button class="nav-btn logout" id="logoutBtn">↪ Logout</button>
         </div>
+    </nav>
 
-        <!-- Workshop Selector -->
-        <div class="workshop-selector">
-            <label for="workshopFilter">Select Workshop</label>
+    <div class="main-container">
+        <!-- Filter Row -->
+        <div class="filter-row">
             <select id="workshopFilter">
                 <option value="">All Workshops</option>
             </select>
-        </div>
-
-        <!-- Stats (Hidden by default) -->
-        <div class="stats-grid" id="statsSection" style="display: none;">
-            <div class="stat-card">
-                <h3>Total</h3>
-                <div class="stat-value" id="totalCount">0</div>
+            <div class="search-wrapper">
+                <input type="text" id="searchBox" placeholder="Search by name, MNC UID, mobile...">
             </div>
-            <div class="stat-card">
-                <h3>Remaining</h3>
-                <div class="stat-value" id="remainingCount">0</div>
-            </div>
-            <div class="stat-card">
-                <h3>% Filled</h3>
-                <div class="stat-value" id="percentageFilled">0%</div>
-            </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white;">
-                <h3 style="color: white;">Present</h3>
-                <div class="stat-value" id="presentCount" style="color: white;">0</div>
-            </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
-                <h3 style="color: white;">Applied Only</h3>
-                <div class="stat-value" id="appliedCount" style="color: white;">0</div>
-            </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white;">
-                <h3 style="color: white;">Spot Reg.</h3>
-                <div class="stat-value" id="spotCount" style="color: white;">0</div>
-            </div>
-        </div>
-
-        <!-- Search & Export -->
-        <div class="workshop-selector">
-            <label for="searchBox">Search Registrations</label>
-            <input type="text" id="searchBox" placeholder="Search by Name, MNC UID, Mobile Number, Payment UTR...">
-            <p style="font-size: 0.85rem; color: #64748b; margin-top: 6px;">
-                💡 Quick search by MNC UID or Mobile Number for instant results
-            </p>
-            
-            <label for="sortOrder" style="margin-top: 12px;">Sort by Registration Time</label>
-            <select id="sortOrder" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
-                <option value="newest">Newest First (Descending)</option>
-                <option value="oldest">Oldest First (Ascending)</option>
+            <select id="sortOrder">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
             </select>
-            
-            <button class="btn btn-primary" id="downloadExcelBtn" style="margin-top: 12px; width: 100%;">
-                📊 Download Excel
-            </button>
+            <button class="filter-btn" onclick="loadRegistrations()">🔄 Refresh</button>
         </div>
 
-        <!-- Registrations List -->
-        <div class="registrations-container">
-            <h2 style="margin-bottom: 16px; color: #1e293b; font-size: 1.2rem;">Registrations</h2>
-            <div id="registrationsList">
-                <div class="spinner"></div>
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="statsSection">
+            <div class="stat-card total">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">Total Registrations</div>
+            </div>
+            <div class="stat-card remaining">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-value" id="remainingCount">0</div>
+                <div class="stat-label">Remaining Seats</div>
+            </div>
+            <div class="stat-card present">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="presentCount">0</div>
+                <div class="stat-label">Present</div>
+            </div>
+            <div class="stat-card applied">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-value" id="appliedCount">0</div>
+                <div class="stat-label">Applied</div>
+            </div>
+            <div class="stat-card spot">
+                <div class="stat-icon">📍</div>
+                <div class="stat-value" id="spotCount">0</div>
+                <div class="stat-label">Spot</div>
+            </div>
+            <div class="stat-card online">
+                <div class="stat-icon">🌐</div>
+                <div class="stat-value" id="onlineCount">0</div>
+                <div class="stat-label">Online</div>
+            </div>
+        </div>
+
+        <!-- Registrations Table -->
+        <div class="registrations-card">
+            <div class="registrations-header">
+                <h2>Registrations (<span id="regCount">0</span>)</h2>
+                <button class="export-btn" id="downloadExcelBtn">
+                    📊 Export Excel
+                </button>
+            </div>
+            <div class="table-wrapper">
+                <div id="registrationsList">
+                    <div class="spinner"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -413,9 +538,9 @@
     <div id="alertMessage" class="alert"></div>
 
     <!-- Payment Modal -->
-    <div id="paymentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; padding: 20px; overflow: auto;" onclick="closePaymentModal()">
+    <div id="paymentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; padding: 20px; overflow: auto;" onclick="closePaymentModal()">
         <div style="max-width: 900px; margin: 40px auto; position: relative;" onclick="event.stopPropagation()">
-            <button onclick="closePaymentModal()" style="position: absolute; top: -40px; right: 0; background: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">×</button>
+            <button onclick="closePaymentModal()" style="position: absolute; top: -50px; right: 0; background: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">×</button>
             <img id="paymentImage" src="" style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
         </div>
     </div>
