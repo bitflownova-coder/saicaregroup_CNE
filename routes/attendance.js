@@ -211,12 +211,12 @@ router.post('/scan', async (req, res) => {
         mncRegistrationNumber: searchIdentifier
       });
     } else {
-      // Search by mncUID and mobileNumber
-      const searchUID = mncUID.trim().toUpperCase();
+      // Search by mncUID and mobileNumber (case-insensitive for mncUID)
+      const searchUID = mncUID.trim();
       const searchMobile = mobileNumber.trim();
       registration = await Registration.findOne({
         workshopId,
-        mncUID: searchUID,
+        mncUID: { $regex: new RegExp(`^${searchUID}$`, 'i') },
         mobileNumber: searchMobile
       });
       
