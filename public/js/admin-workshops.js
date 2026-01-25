@@ -77,11 +77,14 @@ function renderWorkshopsTable(workshops) {
             day: 'numeric' 
         });
         
-        const onlineSeats = workshop.currentRegistrations || 0;
+        // currentRegistrations = total (online + spot)
+        // currentSpotRegistrations = spot only
+        const totalRegistered = workshop.currentRegistrations || 0;
         const spotSeats = workshop.currentSpotRegistrations || 0;
+        const onlineSeats = totalRegistered - spotSeats; // Online only
         const totalSeats = workshop.maxSeats;
         const spotLimit = workshop.spotRegistrationLimit || 0;
-        const seatsPercent = (onlineSeats / totalSeats * 100).toFixed(0);
+        const seatsPercent = (totalRegistered / totalSeats * 100).toFixed(0);
         const seatsClass = seatsPercent >= 90 ? 'seats-warning' : '';
 
         return `
@@ -101,9 +104,10 @@ function renderWorkshopsTable(workshops) {
                 </td>
                 <td>
                     <div class="seats-info ${seatsClass}">
-                        <div style="font-weight: 600;">Online: ${onlineSeats} / ${totalSeats}</div>
+                        <div style="font-weight: 600;">Total: ${totalRegistered} / ${totalSeats}</div>
+                        <div style="font-size: 11px; color: #2563eb; margin-top: 2px;">Online: ${onlineSeats}</div>
                         ${spotLimit > 0 ? `<div style="font-size: 11px; color: #6a1b9a; margin-top: 2px;">Spot: ${spotSeats} / ${spotLimit}</div>` : ''}
-                        <div style="font-size: 11px; color: #666; margin-top: 2px;">(${seatsPercent}% online filled)</div>
+                        <div style="font-size: 11px; color: #666; margin-top: 2px;">(${seatsPercent}% filled)</div>
                     </div>
                 </td>
                 <td>₹${workshop.fee}</td>
@@ -111,7 +115,7 @@ function renderWorkshopsTable(workshops) {
                 <td>
                     <div class="action-buttons">
                         <button class="action-btn btn-view" onclick="viewRegistrations('${workshop._id}')">
-                            📋 View (${onlineSeats + spotSeats})
+                            📋 View (${totalRegistered})
                         </button>
                         <button class="action-btn btn-edit" onclick="editWorkshop('${workshop._id}')">
                             ✏️ Edit
@@ -122,7 +126,7 @@ function renderWorkshopsTable(workshops) {
                         <button class="action-btn btn-status" onclick="showStatusModal('${workshop._id}')">
                             🔄 Status
                         </button>
-                        <button class="action-btn btn-delete" onclick="deleteWorkshop('${workshop._id}', ${onlineSeats + spotSeats})">
+                        <button class="action-btn btn-delete" onclick="deleteWorkshop('${workshop._id}', ${totalRegistered})">
                             🗑️ Delete
                         </button>
                     </div>

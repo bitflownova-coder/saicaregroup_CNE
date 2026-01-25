@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const Workshop = require('../models/Workshop');
 const Registration = require('../models/Registration');
+const Attendance = require('../models/Attendance');
 
 // Configure multer for payment screenshots
 const storage = multer.diskStorage({
@@ -98,9 +99,9 @@ router.post('/logout', (req, res) => {
   });
 });
 
-// Middleware to check spot registration auth
+// Middleware to check spot registration auth (also allow desk users and admins)
 function requireSpotAuth(req, res, next) {
-  if (req.session && req.session.spotUser) {
+  if (req.session && (req.session.spotUser || req.session.deskUser || req.session.attendanceUser || req.session.isAdmin)) {
     next();
   } else {
     res.status(401).json({
@@ -338,7 +339,7 @@ router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
     // Get IP address
     const ipAddress = req.ip || req.connection.remoteAddress;
     
-    // Create registration
+    // Create registration - Auto-mark as PRESENT since they are registering in front of staff
     const registration = await Registration.create({
       workshopId: workshop._id,
       formNumber,
@@ -349,10 +350,31 @@ router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
       paymentUTR: paymentUTR.trim(),
       paymentScreenshot: req.file.filename,
       registrationType: 'spot',
-      attendanceStatus: 'applied',
+      attendanceStatus: 'present',  // Auto-mark as present for spot registrations
       ipAddress,
       submittedAt: new Date()
     });
+    
+    // Create attendance record automatically for spot registrations
+    try {
+      await Attendance.create({
+        workshopId: workshop._id,
+        registrationId: registration._id,
+        mncUID: registration.mncUID,
+        mncRegistrationNumber: registration.mncRegistrationNumber,
+        studentName: registration.fullName,
+        qrToken: 'SPOT_REGISTRATION_AUTO',
+        markedAt: new Date(),
+        ipAddress,
+        userAgent: req.headers['user-agent'] || 'Spot Registration'
+      });
+      console.log('Auto-attendance created for spot registration:', registration.mncUID);
+    } catch (attError) {
+      // If attendance record already exists, that's fine
+      if (attError.code !== 11000) {
+        console.error('Error creating attendance record:', attError);
+      }
+    }
     
     // Increment spot registration count
     workshop.currentSpotRegistrations += 1;
@@ -370,12 +392,13 @@ router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
       workshopId: workshop._id,
       formNumber,
       mncUID,
-      fullName
+      fullName,
+      attendanceAutoMarked: true
     });
     
     res.json({
       success: true,
-      message: 'Spot registration successful',
+      message: 'Spot registration successful! Attendance auto-marked as present.',
       data: {
         formNumber,
         mncUID,
@@ -436,6 +459,35 @@ router.get('/stats/:workshopId', requireSpotAuth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch spot registration stats'
+    });
+  }
+});
+
+// Get recent spot registrations for a workshop
+router.get('/recent/:workshopId', requireSpotAuth, async (req, res) => {
+  try {
+    const { workshopId } = req.params;
+    
+    const registrations = await Registration.find({
+      workshopId,
+      registrationType: 'spot'
+    })
+      .sort({ submittedAt: -1 })
+      .limit(50)
+      .select('fullName mncUID formNumber submittedAt')
+      .lean();
+    
+    res.json({
+      success: true,
+      data: registrations,
+      count: registrations.length
+    });
+    
+  } catch (error) {
+    console.error('Get recent spot registrations error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch recent spot registrations'
     });
   }
 });

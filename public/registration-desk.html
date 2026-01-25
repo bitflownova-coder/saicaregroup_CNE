@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Desk Portal - SaiCareGroup CNE</title>
+    <link rel="icon" href="/assest/logo.png" type="image/png">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Login Box */
+        .login-container {
+            max-width: 450px;
+            margin: 80px auto;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .login-box h1 {
+            color: #1a1a2e;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .login-box p {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-box .logo {
+            display: block;
+            max-width: 80px;
+            margin: 0 auto 20px;
+        }
+
+        /* Portal Container */
+        .portal-container {
+            display: none;
+        }
+
+        .portal-container.active {
+            display: block;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-white {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-white:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Workshop Selector */
+        .workshop-selector {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .workshop-selector h2 {
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .workshop-selector select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .workshop-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* QR Section */
+        .qr-section {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .qr-section h2 {
+            color: #1a1a2e;
+            margin-bottom: 15px;
+        }
+
+        .qr-canvas {
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border: 4px solid #667eea;
+            border-radius: 16px;
+            display: inline-block;
+        }
+
+        .qr-canvas.spot {
+            border-color: #f59e0b;
+        }
+
+        .timer {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-top: 15px;
+        }
+
+        .instruction-box {
+            background: #e8f4fd;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+            text-align: left;
+        }
+
+        .instruction-box.spot {
+            background: #fff7ed;
+            border-left-color: #f59e0b;
+        }
+
+        .instruction-box strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .instruction-box ol {
+            margin: 0 0 0 20px;
+            color: #555;
+        }
+
+        .instruction-box li {
+            margin: 5px 0;
+        }
+
+        /* Recent List */
+        .recent-list {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .recent-list h3 {
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .recent-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .recent-item:last-child {
+            border-bottom: none;
+        }
+
+        .recent-item .name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .recent-item .time {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+
+        /* Full Banner */
+        .full-banner {
+            background: #dc2626;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        /* Spot Specific */
+        .stat-card.spot .stat-value {
+            color: #f59e0b;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .stat-value {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+            padding: 14px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        .nav-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .nav-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* No Workshop */
+        .no-workshop {
+            background: white;
+            border-radius: 16px;
+            padding: 60px 30px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .no-workshop h3 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .no-workshop p {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Section -->
+        <div class="login-container" id="loginSection">
+            <div class="login-box">
+                <img src="assest/logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
+                <h1>🖥️ Registration Desk</h1>
+                <p>Unified Portal for Attendance & Spot Registration</p>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required 
+                               placeholder="Enter username" autocomplete="username">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required 
+                               placeholder="Enter password" autocomplete="current-password">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Login to Desk Portal</button>
+                </form>
+
+                <div id="loginMessage" class="message"></div>
+
+                <div class="nav-links">
+                    <a href="/">Registration Portal</a> | 
+                    <a href="admin-login.html">Admin Login</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Portal (shown after login) -->
+        <div class="portal-container" id="portalSection">
+            <div class="header">
+                <div>
+                    <h1>🖥️ Registration Desk Portal</h1>
+                    <p>Attendance & Spot Registration Management</p>
+                </div>
+                <div class="header-actions">
+                    <button onclick="logout()" class="btn btn-white">Logout</button>
+                </div>
+            </div>
+
+            <!-- Workshop Selection -->
+            <div class="workshop-selector">
+                <h2>📚 Select Workshop</h2>
+                <select id="workshopSelect" onchange="selectWorkshop()">
+                    <option value="">-- Select a Workshop --</option>
+                </select>
+            </div>
+
+            <!-- Content (shown after workshop selected) -->
+            <div id="workshopContent" style="display: none;">
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('attendance')">
+                        📋 Attendance QR
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('spot')">
+                        🎫 Spot Registration QR
+                    </button>
+                </div>
+
+                <!-- Attendance Tab -->
+                <div class="tab-content active" id="attendanceTab">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalRegistrations">0</div>
+                            <div class="stat-label">Total Registered</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalPresent" style="color: #22c55e;">0</div>
+                            <div class="stat-label">Present</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalApplied" style="color: #f59e0b;">0</div>
+                            <div class="stat-label">Not Yet Present</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="attendancePercentage">0%</div>
+                            <div class="stat-label">Attendance %</div>
+                        </div>
+                    </div>
+
+                    <div class="qr-section">
+                        <h2>📱 Attendance QR Code</h2>
+                        <div class="instruction-box">
+                            <strong>📋 Instructions for Students:</strong>
+                            <ol>
+                                <li>Open camera app on your phone</li>
+                                <li>Scan this QR code</li>
+                                <li>Enter your MNC UID and Mobile Number</li>
+                                <li>Click "Mark My Attendance"</li>
+                            </ol>
+                        </div>
+                        <div class="qr-canvas" id="attendanceQRCanvas"></div>
+                        <div class="timer">Next refresh: <span id="attendanceCountdown">30</span>s</div>
+                        <p style="margin-top: 10px; color: #666;">
+                            Workshop: <strong id="selectedWorkshopTitle">-</strong>
+                        </p>
+                    </div>
+
+                    <div class="recent-list">
+                        <h3>📋 Recent Attendance <span id="attendanceCount">(0)</span></h3>
+                        <div id="attendanceRecords">
+                            <div class="empty-state">No attendance records yet</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spot Registration Tab -->
+                <div class="tab-content" id="spotTab">
+                    <div class="stats-grid">
+                        <div class="stat-card spot">
+                            <div class="stat-value" id="spotLimit">0</div>
+                            <div class="stat-label">Spot Limit</div>
+                        </div>
+                        <div class="stat-card spot">
+                            <div class="stat-value" id="spotCurrent" style="color: #22c55e;">0</div>
+                            <div class="stat-label">Registered</div>
+                        </div>
+                        <div class="stat-card spot">
+                            <div class="stat-value" id="spotRemaining" style="color: #f59e0b;">0</div>
+                            <div class="stat-label">Remaining</div>
+                        </div>
+                    </div>
+
+                    <div id="spotFullBanner" class="full-banner" style="display: none;">
+                        ⚠️ Spot Registration is FULL - No more spots available
+                    </div>
+
+                    <div class="qr-section" id="spotQRSection">
+                        <h2>🎫 Spot Registration QR Code</h2>
+                        <div class="instruction-box spot">
+                            <strong>📋 Instructions for Walk-in Candidates:</strong>
+                            <ol>
+                                <li>Scan this QR code with mobile camera</li>
+                                <li>Fill in all registration details</li>
+                                <li>Upload payment screenshot</li>
+                                <li>Submit to complete spot registration</li>
+                            </ol>
+                        </div>
+                        <div class="qr-canvas spot" id="spotQRCanvas"></div>
+                        <p style="margin-top: 15px; color: #666;">
+                            Workshop: <strong id="spotWorkshopTitle">-</strong>
+                        </p>
+                        <button onclick="refreshSpotQR()" class="btn" style="margin-top: 15px; background: #f59e0b; color: white;">
+                            🔄 Refresh QR Code
+                        </button>
+                    </div>
+
+                    <div class="recent-list">
+                        <h3>📋 Recent Spot Registrations <span id="spotCount">(0)</span></h3>
+                        <div id="spotRecords">
+                            <div class="empty-state">No spot registrations yet</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Workshop Selected -->
+            <div id="noWorkshop" class="no-workshop">
+                <h3>📚 No Workshop Selected</h3>
+                <p>Please select a workshop from the dropdown above to start</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/registration-desk.js"></script>
+</body>
+</html>

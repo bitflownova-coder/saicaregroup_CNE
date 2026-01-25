@@ -57,8 +57,8 @@ Write-Host "  - Install dependencies" -ForegroundColor Gray
 Write-Host "  - Restart application" -ForegroundColor Gray
 Write-Host ""
 
-ssh -i $keyPath ubuntu@${EC2_HOST} @"
-echo '=== Updating CNE Application ==='
+ssh -i $keyPath ubuntu@${EC2_HOST} @'
+echo "=== Updating CNE Application ==="
 cd ~
 
 # Backup current version
@@ -97,8 +97,8 @@ echo ''
 echo '✅ Update complete!'
 echo ''
 echo 'Your website has been updated!'
-echo 'Check it at: http://\$(curl -s ifconfig.me)'
-"@
+echo "Check it at: http://$(curl -s ifconfig.me)"
+'@
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`n`n========================================" -ForegroundColor Green
@@ -115,4 +115,3 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "`n❌ Update failed!" -ForegroundColor Red
     Write-Host "Check the error messages above" -ForegroundColor Yellow
 }
-"@

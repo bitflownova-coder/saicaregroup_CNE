@@ -13,6 +13,7 @@ const workshopRoutes = require('./routes/workshop');
 const adminWorkshopRoutes = require('./routes/adminWorkshop');
 const attendanceRoutes = require('./routes/attendance');
 const spotRegistrationRoutes = require('./routes/spotRegistration');
+const registrationDeskRoutes = require('./routes/registrationDesk');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -97,6 +98,7 @@ app.use('/api/workshop', workshopRoutes);
 app.use('/api/admin/workshops', adminWorkshopRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/spot-registration', spotRegistrationRoutes);
+app.use('/api/registration-desk', registrationDeskRoutes);
 
 // Serve HTML pages
 app.get('/', (req, res) => {
@@ -143,6 +145,10 @@ app.get('/spot-register', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'spot-register.html'));
 });
 
+app.get('/registration-desk', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'registration-desk.html'));
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
@@ -158,8 +164,7 @@ app.listen(PORT, () => {
   console.log(`📝 Registration Form: http://localhost:${PORT}`);
   console.log(`👀 View Registration: http://localhost:${PORT}/view-registration`);
   console.log(`🔐 Admin Panel: http://localhost:${PORT}/admin-login`);
-  console.log(`📊 Attendance Portal: http://localhost:${PORT}/attendance-login`);
-  console.log(`🎫 Spot Registration: http://localhost:${PORT}/spot-login`);
+  console.log(`�️ Registration Desk: http://localhost:${PORT}/registration-desk`);
 });
 
 module.exports = app;

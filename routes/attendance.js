@@ -69,9 +69,9 @@ router.post('/logout', (req, res) => {
   });
 });
 
-// Middleware to check attendance auth
+// Middleware to check attendance auth (also allow desk users and admins)
 function requireAttendanceAuth(req, res, next) {
-  if (req.session && req.session.attendanceUser) {
+  if (req.session && (req.session.attendanceUser || req.session.deskUser || req.session.spotUser || req.session.isAdmin)) {
     next();
   } else {
     res.status(401).json({
@@ -380,6 +380,31 @@ router.get('/student/:workshopId/:mncUID', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch attendance status'
+    });
+  }
+});
+
+// Get recent attendance records for a workshop (for registration desk)
+router.get('/recent/:workshopId', requireAttendanceAuth, async (req, res) => {
+  try {
+    const { workshopId } = req.params;
+    
+    const attendances = await Attendance.find({ workshopId })
+      .sort({ markedAt: -1 })
+      .limit(50)
+      .lean();
+    
+    res.json({
+      success: true,
+      data: attendances,
+      count: attendances.length
+    });
+    
+  } catch (error) {
+    console.error('Get recent attendance error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch recent attendance'
     });
   }
 });
