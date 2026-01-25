@@ -84,8 +84,13 @@ function requireAttendanceAuth(req, res, next) {
 // Get active workshops for attendance
 router.get('/workshops', requireAttendanceAuth, async (req, res) => {
   try {
+    // Get today's date at midnight
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Show all workshops that are today or in the future
     const workshops = await Workshop.find({ 
-      status: { $in: ['active', 'spot'] }
+      date: { $gte: today }
     }).sort({ date: -1 });
     
     res.json({
