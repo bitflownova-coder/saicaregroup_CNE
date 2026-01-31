@@ -138,7 +138,7 @@ router.post('/', isAuthenticated, upload.single('qrCodeImage'), async (req, res)
 });
 
 // Update workshop
-router.put('/:id', isAuthenticated, async (req, res) => {
+router.put('/:id', isAuthenticated, upload.single('qrCodeImage'), async (req, res) => {
   try {
     const workshop = await Workshop.findById(req.params.id);
     
@@ -149,8 +149,11 @@ router.put('/:id', isAuthenticated, async (req, res) => {
       });
     }
     
+    // Parse and validate maxSeats
+    const newMaxSeats = req.body.maxSeats ? parseInt(req.body.maxSeats) : workshop.maxSeats;
+    
     // Check if trying to reduce max seats below current registrations
-    if (req.body.maxSeats && parseInt(req.body.maxSeats) < workshop.currentRegistrations) {
+    if (newMaxSeats < workshop.currentRegistrations) {
       return res.status(400).json({
         success: false,
         message: `Cannot reduce max seats below current registrations (${workshop.currentRegistrations})`
@@ -168,29 +171,44 @@ router.put('/:id', isAuthenticated, async (req, res) => {
       }
     }
     
-    // Update fields
-    const allowedUpdates = ['title', 'description', 'date', 'dayOfWeek', 'venue', 'venueLink', 
-                           'fee', 'credits', 'maxSeats', 'status', 'registrationStartDate', 'registrationEndDate',
-                           'spotRegistrationEnabled', 'spotRegistrationLimit'];
+    // Update fields with proper type conversion
+    if (req.body.title !== undefined) workshop.title = req.body.title;
+    if (req.body.description !== undefined) workshop.description = req.body.description;
+    if (req.body.date !== undefined) workshop.date = new Date(req.body.date);
+    if (req.body.dayOfWeek !== undefined) workshop.dayOfWeek = req.body.dayOfWeek;
+    if (req.body.venue !== undefined) workshop.venue = req.body.venue;
+    if (req.body.venueLink !== undefined) workshop.venueLink = req.body.venueLink;
+    if (req.body.fee !== undefined) workshop.fee = parseFloat(req.body.fee);
+    if (req.body.credits !== undefined) workshop.credits = parseFloat(req.body.credits);
+    if (req.body.maxSeats !== undefined) workshop.maxSeats = parseInt(req.body.maxSeats);
+    if (req.body.status !== undefined) workshop.status = req.body.status;
+    if (req.body.registrationStartDate !== undefined) {
+      workshop.registrationStartDate = req.body.registrationStartDate ? new Date(req.body.registrationStartDate) : null;
+    }
+    if (req.body.registrationEndDate !== undefined) {
+      workshop.registrationEndDate = req.body.registrationEndDate ? new Date(req.body.registrationEndDate) : null;
+    }
+    if (req.body.spotRegistrationEnabled !== undefined) {
+      workshop.spotRegistrationEnabled = req.body.spotRegistrationEnabled === 'true' || req.body.spotRegistrationEnabled === true;
+    }
+    if (req.body.spotRegistrationLimit !== undefined) {
+      const newSpotLimit = parseInt(req.body.spotRegistrationLimit);
+      if (newSpotLimit >= workshop.currentSpotRegistrations) {
+        workshop.spotRegistrationLimit = newSpotLimit;
+      }
+    }
     
-    allowedUpdates.forEach(field => {
-      if (req.body[field] !== undefined) {
-        if (field === 'date' || field === 'registrationStartDate' || field === 'registrationEndDate') {
-          workshop[field] = req.body[field] ? new Date(req.body[field]) : null;
-        } else if (field === 'spotRegistrationEnabled') {
-          workshop[field] = req.body[field] === 'true' || req.body[field] === true;
-        } else if (field === 'spotRegistrationLimit') {
-          const limit = parseInt(req.body[field]);
-          if (limit < workshop.currentSpotRegistrations) {
-            // Skip this update if it would be invalid
-            return;
-          }
-          workshop[field] = limit;
-        } else {
-          workshop[field] = req.body[field];
+    // Add QR code if uploaded
+    if (req.file) {
+      // Delete old QR code if exists
+      if (workshop.qrCodeImage) {
+        const oldPath = path.join(__dirname, '..', 'uploads', 'qr-codes', path.basename(workshop.qrCodeImage));
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
         }
       }
-    });
+      workshop.qrCodeImage = req.file.filename;
+    }
     
     await workshop.save();
     
@@ -202,6 +220,10 @@ router.put('/:id', isAuthenticated, async (req, res) => {
     
   } catch (error) {
     console.error('Error updating workshop:', error);
+    // Delete uploaded file if workshop update failed
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
     res.status(500).json({
       success: false,
       message: 'Error updating workshop: ' + error.message
