@@ -126,6 +126,9 @@ function renderWorkshopsTable(workshops) {
                         <button class="action-btn btn-status" onclick="showStatusModal('${workshop._id}')">
                             🔄 Status
                         </button>
+                        <button class="action-btn btn-sync" onclick="syncWorkshopCounts('${workshop._id}')" title="Sync registration counts">
+                            🔄 Sync
+                        </button>
                         <button class="action-btn btn-delete" onclick="deleteWorkshop('${workshop._id}', ${totalRegistered})">
                             🗑️ Delete
                         </button>
@@ -468,6 +471,35 @@ async function deleteWorkshop(id, registrationCount) {
 // View registrations for workshop
 function viewRegistrations(id) {
     window.location.href = `/admin-dashboard?workshopId=${id}`;
+}
+
+// Sync workshop registration counts
+async function syncWorkshopCounts(id) {
+    if (!confirm('Synchronize registration counts with actual database records? This will fix any count inconsistencies.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/admin/workshops/${id}/sync-counts`, {
+            method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            const { before, after } = result.data;
+            let message = 'Counts synchronized successfully!\n\n';
+            message += `Before: Total=${before.total}, Spot=${before.spot}\n`;
+            message += `After: Total=${after.total}, Spot=${after.spot}, Online=${after.online}`;
+            showSuccess(message);
+            loadWorkshops();
+        } else {
+            showError(result.message || 'Failed to sync counts');
+        }
+    } catch (error) {
+        console.error('Error syncing counts:', error);
+        showError('Error syncing counts. Please try again.');
+    }
 }
 
 // Utility functions

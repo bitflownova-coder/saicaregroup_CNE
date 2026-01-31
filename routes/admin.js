@@ -293,8 +293,9 @@ router.delete('/registrations/:id', isAuthenticated, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Registration not found' });
     }
 
-    // Store workshopId before deletion
+    // Store workshopId and registration type before deletion
     const workshopId = record.workshopId;
+    const registrationType = record.registrationType;
 
     // Delete associated payment screenshot if exists
     if (record.paymentScreenshot) {
@@ -310,10 +311,19 @@ router.delete('/registrations/:id', isAuthenticated, async (req, res) => {
     if (workshopId) {
       const Workshop = require('../models/Workshop');
       const workshop = await Workshop.findById(workshopId);
-      if (workshop && workshop.currentRegistrations > 0) {
-        workshop.currentRegistrations -= 1;
+      if (workshop) {
+        if (workshop.currentRegistrations > 0) {
+          workshop.currentRegistrations -= 1;
+          console.log(`Decremented registration count for workshop ${workshopId} to ${workshop.currentRegistrations}`);
+        }
+        
+        // Decrement spot registration count if it was a spot registration
+        if (registrationType === 'spot' && workshop.currentSpotRegistrations > 0) {
+          workshop.currentSpotRegistrations -= 1;
+          console.log(`Decremented spot registration count for workshop ${workshopId} to ${workshop.currentSpotRegistrations}`);
+        }
+        
         await workshop.save();
-        console.log(`Decremented registration count for workshop ${workshopId} to ${workshop.currentRegistrations}`);
       }
     }
 

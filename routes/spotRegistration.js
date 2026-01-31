@@ -171,7 +171,13 @@ router.get('/qr-token/:workshopId', requireSpotAuth, async (req, res) => {
       await workshop.save();
     }
     
-    const spotsRemaining = workshop.spotRegistrationLimit - workshop.currentSpotRegistrations;
+    // Get actual spot count from database
+    const currentSpotCount = await Registration.countDocuments({
+      workshopId: workshop._id,
+      registrationType: 'spot'
+    });
+    
+    const spotsRemaining = workshop.spotRegistrationLimit - currentSpotCount;
     
     res.json({
       success: true,
@@ -180,7 +186,7 @@ router.get('/qr-token/:workshopId', requireSpotAuth, async (req, res) => {
       workshopId: workshop._id,
       workshopTitle: workshop.title,
       spotRegistrationLimit: workshop.spotRegistrationLimit,
-      currentSpotRegistrations: workshop.currentSpotRegistrations,
+      currentSpotRegistrations: currentSpotCount,
       spotsRemaining,
       spotsFull: spotsRemaining <= 0
     });
@@ -226,8 +232,13 @@ router.post('/verify-token', async (req, res) => {
       });
     }
     
-    // Check if spots available
-    const spotsRemaining = workshop.spotRegistrationLimit - workshop.currentSpotRegistrations;
+    // Check if spots available - use actual count from database
+    const currentSpotCount = await Registration.countDocuments({
+      workshopId: workshop._id,
+      registrationType: 'spot'
+    });
+    
+    const spotsRemaining = workshop.spotRegistrationLimit - currentSpotCount;
     if (spotsRemaining <= 0) {
       return res.json({
         success: false,
@@ -301,8 +312,13 @@ router.post('/submit', upload.single('paymentScreenshot'), async (req, res) => {
       });
     }
     
-    // Check spots available
-    if (workshop.currentSpotRegistrations >= workshop.spotRegistrationLimit) {
+    // Check spots available - use actual count from database
+    const currentSpotCount = await Registration.countDocuments({
+      workshopId: workshop._id,
+      registrationType: 'spot'
+    });
+    
+    if (currentSpotCount >= workshop.spotRegistrationLimit) {
       if (req.file) fs.unlinkSync(req.file.path);
       return res.json({
         success: false,
@@ -438,6 +454,7 @@ router.get('/stats/:workshopId', requireSpotAuth, async (req, res) => {
       });
     }
     
+    // Count actual spot registrations from database (more reliable)
     const spotRegistrations = await Registration.countDocuments({
       workshopId,
       registrationType: 'spot'
@@ -447,8 +464,8 @@ router.get('/stats/:workshopId', requireSpotAuth, async (req, res) => {
       success: true,
       data: {
         spotRegistrationLimit: workshop.spotRegistrationLimit,
-        currentSpotRegistrations: workshop.currentSpotRegistrations,
-        spotsRemaining: workshop.spotRegistrationLimit - workshop.currentSpotRegistrations,
+        currentSpotRegistrations: spotRegistrations, // Use actual count from database
+        spotsRemaining: workshop.spotRegistrationLimit - spotRegistrations,
         spotRegistrationEnabled: workshop.spotRegistrationEnabled,
         actualSpotCount: spotRegistrations
       }

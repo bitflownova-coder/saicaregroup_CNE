@@ -460,4 +460,66 @@ router.put('/:id/spot-settings', isAuthenticated, async (req, res) => {
   }
 });
 
+// Sync workshop registration counts with actual database counts
+router.post('/:id/sync-counts', isAuthenticated, async (req, res) => {
+  try {
+    const workshop = await Workshop.findById(req.params.id);
+    
+    if (!workshop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Workshop not found'
+      });
+    }
+    
+    // Count actual registrations from database
+    const totalRegistrations = await Registration.countDocuments({
+      workshopId: workshop._id
+    });
+    
+    const spotRegistrations = await Registration.countDocuments({
+      workshopId: workshop._id,
+      registrationType: 'spot'
+    });
+    
+    const onlineRegistrations = await Registration.countDocuments({
+      workshopId: workshop._id,
+      registrationType: 'online'
+    });
+    
+    // Update workshop with actual counts
+    const oldTotalCount = workshop.currentRegistrations;
+    const oldSpotCount = workshop.currentSpotRegistrations;
+    
+    workshop.currentRegistrations = totalRegistrations;
+    workshop.currentSpotRegistrations = spotRegistrations;
+    
+    await workshop.save();
+    
+    res.json({
+      success: true,
+      message: 'Registration counts synchronized successfully',
+      data: {
+        before: {
+          total: oldTotalCount,
+          spot: oldSpotCount
+        },
+        after: {
+          total: totalRegistrations,
+          spot: spotRegistrations,
+          online: onlineRegistrations
+        },
+        workshop: workshop
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error syncing counts:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error synchronizing counts'
+    });
+  }
+});
+
 module.exports = router;
