@@ -107,7 +107,7 @@ router.get('/workshops', requireAttendanceAuth, async (req, res) => {
   }
 });
 
-// Generate new QR token for a workshop (refreshes every call)
+// Generate QR data for a workshop (no token needed, just use workshopId)
 router.get('/qr-token/:workshopId', requireAttendanceAuth, async (req, res) => {
   try {
     const { workshopId } = req.params;
@@ -121,29 +121,10 @@ router.get('/qr-token/:workshopId', requireAttendanceAuth, async (req, res) => {
       });
     }
     
-    // Generate token (valid for 24 hours)
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-    
-    // Store token with workshop ID
-    activeQRTokens.set(token, {
-      workshopId,
-      expiresAt,
-      createdAt: Date.now()
-    });
-    
-    // Clean up expired tokens
-    for (const [key, value] of activeQRTokens.entries()) {
-      if (value.expiresAt < Date.now()) {
-        activeQRTokens.delete(key);
-      }
-    }
-    
+    // Return workshopId directly (no token storage needed)
     res.json({
       success: true,
-      token,
-      expiresAt,
-      workshopId,
+      workshopId: workshopId,
       workshopTitle: workshop.title
     });
     
@@ -159,13 +140,13 @@ router.get('/qr-token/:workshopId', requireAttendanceAuth, async (req, res) => {
 // Scan QR code and mark attendance
 router.post('/scan', async (req, res) => {
   try {
-    const { token, mncRegistrationNumber, mncUID, mobileNumber } = req.body;
+    const { workshopId, mncRegistrationNumber, mncUID, mobileNumber } = req.body;
     
     // Validate required fields with specific error messages
-    if (!token) {
+    if (!workshopId) {
       return res.json({
         success: false,
-        message: 'QR code not scanned. Please scan the QR code first.'
+        message: 'Invalid QR code. Please scan a valid QR code.'
       });
     }
     
@@ -183,24 +164,14 @@ router.post('/scan', async (req, res) => {
       });
     }
     
-    // Verify token exists and is not expired
-    const tokenData = activeQRTokens.get(token);
-    if (!tokenData) {
+    // Verify workshop exists
+    const workshop = await Workshop.findById(workshopId);
+    if (!workshop) {
       return res.json({
         success: false,
-        message: 'Invalid or expired QR code. Please scan the latest QR code.'
+        message: 'Workshop not found.'
       });
     }
-    
-    if (tokenData.expiresAt < Date.now()) {
-      activeQRTokens.delete(token);
-      return res.json({
-        success: false,
-        message: 'QR code has expired. Please scan the latest QR code.'
-      });
-    }
-    
-    const { workshopId } = tokenData;
     
     // Find registration based on what was provided
     let registration;

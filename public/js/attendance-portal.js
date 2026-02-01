@@ -105,8 +105,8 @@ async function generateQR() {
         const data = await response.json();
 
         if (data.success) {
-            // Generate QR code with attendance scan URL
-            const scanURL = `${window.location.origin}/attendance-scan.html?token=${data.token}`;
+            // Generate QR code with attendance scan URL using workshopId
+            const scanURL = `${window.location.origin}/attendance-scan.html?workshopId=${data.workshopId}`;
             
             const qrDiv = document.getElementById('qrCanvas');
             // Clear previous QR code

@@ -252,7 +252,7 @@ async function generateAttendanceQR() {
         const data = await response.json();
 
         if (data.success) {
-            const scanURL = `${window.location.origin}/student-attendance-scan.html?token=${data.token}`;
+            const scanURL = `${window.location.origin}/student-attendance-scan.html?workshopId=${data.workshopId}`;
             
             // Clear previous QR
             const container = document.getElementById('attendanceQRCanvas');

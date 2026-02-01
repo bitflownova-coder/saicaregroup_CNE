@@ -351,23 +351,23 @@
 
     <script>
         let html5QrCode = null;
-        let scannedToken = null;
+        let scannedWorkshopId = null;
 
-        // Check for token in URL on page load
+        // Check for workshopId in URL on page load
         document.addEventListener('DOMContentLoaded', () => {
-            checkUrlToken();
+            checkUrlWorkshopId();
             setupFormValidation();
         });
 
-        // Check if token is in URL (direct camera scan)
-        function checkUrlToken() {
+        // Check if workshopId is in URL (direct camera scan)
+        function checkUrlWorkshopId() {
             const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
+            const workshopId = urlParams.get('workshopId');
 
-            if (token) {
-                console.log('Token found in URL:', token.substring(0, 10) + '...');
-                scannedToken = token;
-                document.getElementById('workshopToken').value = token;
+            if (workshopId) {
+                console.log('Workshop ID found in URL:', workshopId);
+                scannedWorkshopId = workshopId;
+                document.getElementById('workshopToken').value = workshopId;
                 
                 // Show token status
                 const tokenStatus = document.getElementById('tokenStatus');
@@ -473,13 +473,13 @@
         document.getElementById('attendanceForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const token = document.getElementById('workshopToken').value;
+            const workshopId = document.getElementById('workshopToken').value;
             const mncUID = document.getElementById('mncUID').value.trim().toUpperCase();
             const mobileNumber = document.getElementById('mobileNumber').value.trim();
 
             // Validation
-            if (!token) {
-                showError('Please scan the QR code first');
+            if (!workshopId) {
+                showError('No workshop selected. Please scan the QR code again.');
                 return;
             }
 
@@ -499,7 +499,7 @@
             submitBtn.textContent = 'Marking Attendance...';
 
             try {
-                console.log('Submitting attendance:', { token: token.substring(0, 10) + '...', mncUID, mobileNumber });
+                console.log('Submitting attendance:', { workshopId, mncUID, mobileNumber });
                 
                 const response = await fetch('/api/attendance/scan', {
                     method: 'POST',
@@ -507,7 +507,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        token: token,
+                        workshopId: workshopId,
                         mncUID: mncUID,
                         mobileNumber: mobileNumber
                     })
