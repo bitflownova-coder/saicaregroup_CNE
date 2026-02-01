@@ -218,10 +218,10 @@ router.get('/export-excel', isAuthenticated, async (req, res) => {
       filter.workshopId = workshopId;
     }
     
-    // Fetch registrations with optional workshop filter
+    // Fetch registrations with optional workshop filter, sorted by form number
     const registrations = await Registration.find(filter)
       .populate('workshopId', 'title')
-      .sort({ submittedAt: -1 });
+      .sort({ formNumber: 1 });
 
     // Prepare data for Excel
     const excelData = registrations.map((reg, index) => ({
