@@ -4,7 +4,7 @@ let selectedWorkshop = null;
 let attendanceQRCode = null;
 let spotQRCode = null;
 let attendanceRefreshInterval = null;
-let attendanceCountdown = 30;
+let attendanceCountdown = 120;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -232,7 +232,7 @@ function startAttendanceQRRefresh() {
     generateAttendanceQR();
     
     // Start countdown and refresh
-    attendanceCountdown = 30;
+    attendanceCountdown = 120;
     updateCountdownDisplay();
     
     attendanceRefreshInterval = setInterval(() => {
@@ -241,7 +241,7 @@ function startAttendanceQRRefresh() {
         
         if (attendanceCountdown <= 0) {
             generateAttendanceQR();
-            attendanceCountdown = 30;
+            attendanceCountdown = 120;
             loadAttendanceData(); // Refresh stats too
         }
     }, 1000);
