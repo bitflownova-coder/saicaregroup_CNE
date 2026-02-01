@@ -5,7 +5,7 @@ const Workshop = require('../models/Workshop');
 const Registration = require('../models/Registration');
 const Attendance = require('../models/Attendance');
 
-// In-memory store for active QR tokens (refreshes every 30 seconds)
+// In-memory store for active QR tokens (refreshes every 2 minutes)
 const activeQRTokens = new Map();
 
 // Attendance login endpoint
@@ -121,9 +121,9 @@ router.get('/qr-token/:workshopId', requireAttendanceAuth, async (req, res) => {
       });
     }
     
-    // Generate new token (30-second validity)
+    // Generate new token (2-minute validity)
     const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = Date.now() + 30000; // 30 seconds
+    const expiresAt = Date.now() + 120000; // 2 minutes
     
     // Store token with workshop ID
     activeQRTokens.set(token, {

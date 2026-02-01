@@ -81,7 +81,7 @@ function selectWorkshop() {
 
         // Start QR generation and refresh
         generateQR();
-        qrRefreshInterval = setInterval(generateQR, 30000); // Refresh every 30 seconds
+        qrRefreshInterval = setInterval(generateQR, 120000); // Refresh every 2 minutes
 
         // Start countdown
         startCountdown();
