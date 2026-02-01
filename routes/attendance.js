@@ -231,7 +231,7 @@ router.post('/scan', async (req, res) => {
       mncUID: registration.mncUID,
       mncRegistrationNumber: registration.mncRegistrationNumber,
       studentName: registration.fullName,
-      qrToken: token,
+      qrToken: 'SCAN',
       ipAddress,
       userAgent,
       deviceFingerprint: `${userAgent}_${ipAddress}`
@@ -240,12 +240,6 @@ router.post('/scan', async (req, res) => {
     // Update registration status to present
     registration.attendanceStatus = 'present';
     await registration.save();
-    
-    // Delete used token
-    activeQRTokens.delete(token);
-    
-    // Get workshop details
-    const workshop = await Workshop.findById(workshopId);
     
     console.log('Attendance marked:', {
       workshopId,
