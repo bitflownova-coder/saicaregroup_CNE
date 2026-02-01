@@ -545,7 +545,9 @@
                             </ol>
                         </div>
                         <div class="qr-canvas" id="attendanceQRCanvas"></div>
-                        <div class="timer">Next refresh: <span id="attendanceCountdown">120</span>s</div>
+                        <button onclick="refreshAttendanceQR()" class="btn" style="margin-top: 15px; background: #10b981; color: white;">
+                            🔄 Refresh QR Code
+                        </button>
                         <p style="margin-top: 10px; color: #666;">
                             Workshop: <strong id="selectedWorkshopTitle">-</strong>
                         </p>

@@ -79,12 +79,8 @@ function selectWorkshop() {
         const selectedOption = select.options[select.selectedIndex];
         document.getElementById('selectedWorkshopTitle').textContent = selectedOption.textContent;
 
-        // Start QR generation and refresh
+        // Generate QR code once (no auto-refresh)
         generateQR();
-        qrRefreshInterval = setInterval(generateQR, 120000); // Refresh every 2 minutes
-
-        // Start countdown
-        startCountdown();
 
         // Load stats and attendance
         loadStats();
@@ -124,9 +120,6 @@ async function generateQR() {
                 colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.H
             });
-
-            // Reset countdown
-            countdown = 30;
         }
     } catch (error) {
         console.error('Error generating QR:', error);

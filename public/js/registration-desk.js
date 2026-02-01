@@ -225,26 +225,8 @@ function displayRecentAttendance(records) {
 
 // Start attendance QR refresh
 function startAttendanceQRRefresh() {
-    // Clear any existing interval
-    stopAttendanceRefresh();
-    
-    // Generate initial QR
+    // Generate initial QR (no auto-refresh)
     generateAttendanceQR();
-    
-    // Start countdown and refresh
-    attendanceCountdown = 120;
-    updateCountdownDisplay();
-    
-    attendanceRefreshInterval = setInterval(() => {
-        attendanceCountdown--;
-        updateCountdownDisplay();
-        
-        if (attendanceCountdown <= 0) {
-            generateAttendanceQR();
-            attendanceCountdown = 120;
-            loadAttendanceData(); // Refresh stats too
-        }
-    }, 1000);
 }
 
 // Stop attendance refresh
@@ -255,9 +237,10 @@ function stopAttendanceRefresh() {
     }
 }
 
-// Update countdown display
-function updateCountdownDisplay() {
-    document.getElementById('attendanceCountdown').textContent = attendanceCountdown;
+// Manual refresh function
+function refreshAttendanceQR() {
+    generateAttendanceQR();
+    loadAttendanceData();
 }
 
 // Generate attendance QR code

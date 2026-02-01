@@ -149,12 +149,13 @@
                 <h2>Scan QR Code to Mark Attendance</h2>
                 <div class="scan-instruction">
                     <strong>Instructions:</strong> Students should scan this QR code with their mobile device and enter their MNC Registration Number.
-                    <br>QR code refreshes every 2 minutes for security.
                 </div>
                 <div class="qr-canvas">
                     <div id="qrCanvas"></div>
                 </div>
-                <div class="timer">Next refresh in: <span id="countdown">30</span>s</div>
+                <button onclick="generateQR()" class="btn" style="margin-top: 15px; background: #10b981; color: white;">
+                    🔄 Refresh QR Code
+                </button>
                 <div style="margin-top: 15px;">
                     <small style="color: #666;">Workshop: <strong id="selectedWorkshopTitle"></strong></small>
                 </div>
