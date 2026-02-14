@@ -106,6 +106,10 @@ workshopSchema.statics.getActiveWorkshop = async function() {
   return await this.findOne({ status: 'active' }).sort({ date: 1 });
 };
 
+workshopSchema.statics.getActiveWorkshops = async function() {
+  return await this.find({ status: 'active' }).sort({ date: 1 });
+};
+
 workshopSchema.statics.getUpcomingWorkshops = async function() {
   return await this.find({ 
     status: { $in: ['upcoming', 'active'] },

@@ -104,17 +104,6 @@ router.post('/', isAuthenticated, upload.single('qrCodeImage'), async (req, res)
       workshopData.qrCodeImage = '/uploads/qr-codes/' + req.file.filename;
     }
     
-    // Check if trying to activate multiple workshops
-    if (workshopData.status === 'active') {
-      const existingActive = await Workshop.findOne({ status: 'active' });
-      if (existingActive) {
-        return res.status(400).json({
-          success: false,
-          message: 'Another workshop is already active. Please deactivate it first.'
-        });
-      }
-    }
-    
     const workshop = new Workshop(workshopData);
     await workshop.save();
     
@@ -158,17 +147,6 @@ router.put('/:id', isAuthenticated, upload.single('qrCodeImage'), async (req, re
         success: false,
         message: `Cannot reduce max seats below current registrations (${workshop.currentRegistrations})`
       });
-    }
-    
-    // Check if trying to activate multiple workshops
-    if (req.body.status === 'active' && workshop.status !== 'active') {
-      const existingActive = await Workshop.findOne({ status: 'active', _id: { $ne: workshop._id } });
-      if (existingActive) {
-        return res.status(400).json({
-          success: false,
-          message: 'Another workshop is already active. Please deactivate it first.'
-        });
-      }
     }
     
     // Update fields with proper type conversion
@@ -290,17 +268,6 @@ router.put('/:id/status', isAuthenticated, async (req, res) => {
         success: false,
         message: 'Workshop not found'
       });
-    }
-    
-    // Check if trying to activate multiple workshops
-    if (status === 'active' && workshop.status !== 'active') {
-      const existingActive = await Workshop.findOne({ status: 'active', _id: { $ne: workshop._id } });
-      if (existingActive) {
-        return res.status(400).json({
-          success: false,
-          message: 'Another workshop is already active. Please deactivate it first.'
-        });
-      }
     }
     
     workshop.status = status;

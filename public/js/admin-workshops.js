@@ -372,7 +372,7 @@ function showStatusModal(id) {
             spotSettings.style.display = 'none';
             
             if (newStatus === 'active' && workshop.status !== 'active') {
-                warningText.textContent = 'Setting this workshop as ACTIVE will make it visible to users for registration. Multiple workshops can be active simultaneously.';
+                warningText.textContent = 'Setting this workshop as ACTIVE will make it visible to users for registration.';
                 warning.style.display = 'block';
             } else if (newStatus === 'completed') {
                 warningText.textContent = 'Marking as COMPLETED will close registration permanently.';
