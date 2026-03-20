@@ -103,7 +103,7 @@ workshopSchema.index({ date: -1 });
 
 // Static methods
 workshopSchema.statics.getActiveWorkshop = async function() {
-  return await this.findOne({ status: 'active' }).sort({ date: 1 });
+  return await this.findOne({ status: 'active' }).sort({ date: 1 }).lean();
 };
 
 workshopSchema.statics.getActiveWorkshops = async function() {
@@ -111,22 +111,32 @@ workshopSchema.statics.getActiveWorkshops = async function() {
 };
 
 workshopSchema.statics.getUpcomingWorkshops = async function() {
-  return await this.find({ 
-    status: { $in: ['upcoming', 'active'] },
-    date: { $gte: new Date() }
-  }).sort({ date: 1 });
+  const now = new Date();
+  const workshops = await this.find({
+    status: { $in: ['upcoming', 'active'] }
+  }).sort({ date: 1 }).lean();
+
+  return workshops.filter((workshop) => {
+    const workshopDate = new Date(workshop.date);
+    return !Number.isNaN(workshopDate.getTime()) && workshopDate >= now;
+  });
 };
 
 workshopSchema.statics.getLatestWorkshop = async function() {
   // First try to get active workshop
-  const active = await this.findOne({ status: 'active' });
+  const active = await this.findOne({ status: 'active' }).sort({ date: 1 }).lean();
   if (active) return active;
   
   // If no active, get the nearest upcoming
-  return await this.findOne({ 
-    status: 'upcoming',
-    date: { $gte: new Date() }
-  }).sort({ date: 1 });
+  const now = new Date();
+  const upcoming = await this.find({ status: 'upcoming' }).sort({ date: 1 }).lean();
+
+  const nextUpcoming = upcoming.find((workshop) => {
+    const workshopDate = new Date(workshop.date);
+    return !Number.isNaN(workshopDate.getTime()) && workshopDate >= now;
+  });
+
+  return nextUpcoming || null;
 };
 
 // Instance methods
